@@ -36,10 +36,20 @@ typedef struct{
 	addressParent first;
 }ListParent;
 
+void err(char *s);
+void suc(char *s);
 void showMenu(); // menu utama
+void menuSales();
+void menuProperti();
+void menuLaporan(); // laporan owner
+
 void inisialisasi(ListParent *L);
 bool isEmpty(ListParent L);
 
 // FUNGSI PARENT
 bool haveChild(addressParent L); // cek punya properti
 addressParent alokasiParent(DataParent dataParent); // alokasi data sales
+addressParent findParent(ListParent L, string nipSales);
+void insertFirstParent(ListParent *L, DataParent dataParent);
+
+// FUNGSI CHILD
