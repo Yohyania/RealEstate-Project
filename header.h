@@ -1,55 +1,73 @@
+#ifndef HEADER_H
+#define HEADER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <conio.h>
 
 typedef char string[100];
-typedef struct tChild* addressChild;
-typedef struct tParent* addressParent;
+typedef struct tChild *addressChild;
+typedef struct tParent *addressParent;
 
-typedef struct{
-	string nomorProperti;
-	string jenis; // (tanah / rumah)
-	string alamat;
-	int harga;
-}DataChild;
+typedef struct {
+    string nomorProperti;
+    string jenis; // (tanah / rumah)
+    string alamat;
+    int harga;
+} DataChild;
 
-typedef struct{
-	string NIP;
-	string nama;
-	string nomorTelpon;
-	int totalPenjualan;
-}DataParent;
+typedef struct {
+    string NIP;
+    string nama;
+    string nomorTelpon;
+    int totalPenjualan;
+} DataParent;
 
-typedef struct tChild{
-	DataChild dataChild;
-	addressChild nextChild;
-}NodeChild;
+typedef struct tChild {
+    DataChild dataChild;
+    addressChild nextChild;
+} NodeChild;
 
-typedef struct tParent{
-	DataParent dataParent;
-	addressParent nextParent;
-	addressChild firstChild;
-}NodeParent;
+typedef struct tParent {
+    DataParent dataParent;
+    addressParent nextParent;
+    addressChild firstChild;
+} NodeParent;
 
-typedef struct{
-	addressParent first;
-}ListParent;
+typedef struct {
+    addressParent first;
+} ListParent;
 
-void err(char *s);
-void suc(char *s);
-void showMenu(); // menu utama
-void menuSales();
-void menuProperti();
-void menuLaporan(); // laporan owner
+//////////////////////Fungsi Tampilan////////////////////////////
+void err(char *s);   // Menampilkan pesan error (merah)
+void suc(char *s);   // Menampilkan pesan berhasil (hijau)
+void showMenu();     // Menampilkan menu utama
+void menuSales();    // Menampilkan menu sales
+void menuProperti(); // Menampilkan menu properti
+void menuLaporan();  // Menampilkan menu laporan owner
 
-void inisialisasi(ListParent *L);
-bool isEmpty(ListParent L);
+//////////////////////Fungsi List////////////////////////////////
+void inisialisasi(ListParent *L); // Menginisialisasikan LIST
+bool isEmpty(ListParent L);       // Mengecek apakah List kosong
 
-// FUNGSI PARENT
-bool haveChild(addressParent L); // cek punya properti
-addressParent alokasiParent(DataParent dataParent); // alokasi data sales
-addressParent findParent(ListParent L, string nipSales);
-void insertFirstParent(ListParent *L, DataParent dataParent);
+//////////////////////Fungsi Parent//////////////////////////////
+bool haveChild(addressParent sales);                                           // Mengecek apakah sales memiliki properti
+addressParent alokasiParent(DataParent dataBaru);                              // Mengalokasikan data sales (konstruktor)
+addressParent findParent(ListParent L, string nipSales);                       // Mencari data sales berdasarkan NIP
+int countParent(ListParent L);                                                 // Menghitung jumlah sales
+void insertFirstParent(ListParent *L, DataParent dataBaru);                    // Menambah sales di awal list
+void insertLastParent(ListParent *L, DataParent dataBaru);                     // Menambah sales di akhir list
+void insertAfterParent(ListParent *L, string nipSebelum, DataParent dataBaru); // Menambah sales setelah sales tertentu
+void updateParent(ListParent *L, string nipSales, DataParent dataBaru);        // Mengubah data sales
+void deleteFirstParent(ListParent *L);                                         // Menghapus sales pertama
+void deleteLastParent(ListParent *L);                                          // Menghapus sales terakhir
+void deleteAtParent(ListParent *L, string nipSales);                           // Menghapus sales berdasarkan NIP
+void printParent(addressParent sales);                                         // Menampilkan satu data sales
+void printAllParent(ListParent L);                                             // Menampilkan semua data sales
 
-// FUNGSI CHILD
+//////////////////////Fungsi Child///////////////////////////////
+// (belum dibuat)
+
+#endif
