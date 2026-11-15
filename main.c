@@ -37,25 +37,31 @@ int main(int argc, char *argv[]) {
                             break;
 
                         case 2: // Ubah Sales
-                            printf("\n\t--- UBAH SALES ---\n");
+							if(isEmpty(L)){
+                        		err("Data Sales Masih Kosong");
+                        		break;
+							}
+                            else{
+								printf("\n\t--- UBAH SALES ---\n");
 
-                            printf("\tNIP Sales yang diubah : ");fflush(stdin);gets(nipLama);
-
-                            salesDicari = findParent(L, nipLama);
-                            if (salesDicari == NULL) {
-                                err("Data Sales Tidak Ditemukan");
-                                break;
-                            }
-
-                            printf("\tNIP Baru (kosongkan jika tetap) : ");fflush(stdin);gets(nipBaru);
-                            if (strcmp(nipBaru, "") == 0)
-                                strcpy(nipBaru, nipLama);
-                            strcpy(dataSales.NIP, nipBaru);
-
-                            printf("\tNama Baru          : ");fflush(stdin);gets(dataSales.nama);
-							printf("\tNomor Telepon Baru : ");fflush(stdin);gets(dataSales.nomorTelpon);
-
-                            updateParent(&L, nipLama, dataSales);
+	                            printf("\tNIP Sales yang diubah : ");fflush(stdin);gets(nipLama);
+	
+	                            salesDicari = findParent(L, nipLama);
+	                            if (salesDicari == NULL) {
+	                                err("Data Sales Tidak Ditemukan");
+	                                break;
+	                            }
+	
+	                            printf("\tNIP Baru (kosongkan jika tetap) : ");fflush(stdin);gets(nipBaru);
+	                            if (strcmp(nipBaru, "") == 0)
+	                                strcpy(nipBaru, nipLama);
+	                            strcpy(dataSales.NIP, nipBaru);
+	
+	                            printf("\tNama Baru          : ");fflush(stdin);gets(dataSales.nama);
+								printf("\tNomor Telepon Baru : ");fflush(stdin);gets(dataSales.nomorTelpon);
+	
+	                            updateParent(&L, nipLama, dataSales);
+							}
                             break;
 
                         case 3: // Hapus Sales
@@ -116,7 +122,7 @@ int main(int argc, char *argv[]) {
             case 4: // LAPORAN OWNER (belum dibuat)
                 do{
                 	menuLaporan();scanf("%d", &pilihLaporan);
-                	switch(menu){
+                	switch(pilihLaporan){
                 		case 1:{	
 						break;
 						}
