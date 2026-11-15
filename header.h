@@ -68,6 +68,16 @@ void printParent(addressParent sales);                                         /
 void printAllParent(ListParent L);                                             // Menampilkan semua data sales
 
 //////////////////////Fungsi Child///////////////////////////////
-// (belum dibuat)
+bool haveChild(addressParent P);                                               // untuk menegcek apakah sales mempunyai properti
+addressChild alokasiChild (DataChild dataChild);                                // untuk mengalokasikan data properti
+addressChild findChild(addressChild C, string nomorProperti);                    // untuk mencari data properti
+void insertFirstChild(addressChild *C, DataChild dataBaru);                       // untuk menambah awal properti
+void insertLastChild(addressChild *C, DataChild databaru);                        // untuk menambah akhir properti
+void insertAtChild(addressChild *C, DataChild dataBaru, int input);               // untuk menambah properti setelah properti tertentu
+void updateChild(addressChild *C, string nomorProperti ,DataChild dataBaru);      // untuk update data properti
+void deleteFirtsChild(addressChild *C);                                           // untuk hapus properti pertama 
+void deleteLastChild(addressChild *C);                                            // untuk hapus properti akhir
+void deleteAtChild(addressChild *C, string nomorProperti);                        //untuk hapus properti berdasarkan nomor properti
+void tampilProperti(addressChild C);                                              // untuk menampilkan semua properti
 
 #endif
