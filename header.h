@@ -68,6 +68,15 @@ void printParent(addressParent sales);                                         /
 void printAllParent(ListParent L);                                             // Menampilkan semua data sales
 
 //////////////////////Fungsi Child///////////////////////////////
-// (belum dibuat)
+addressChild alokasiChild (DataChild dataChild);                                                 
+addressChild findChild(addressChild C, string nomorProperti);
+void insertFirstChild(ListParent *L, string nipSales, DataChild dataBaru);
+void insertLastChild(ListParent *L, string nipSales, DataChild dataBaru);
+void insertAtChild(ListParent *L, string nipSales, DataChild dataBaru, int input);
+void updateChild(ListParent *L, string nipSales, string nomorProperti ,DataChild dataBaru);
+void deleteFirtsChild(ListParent *L, string nipsSales);
+void deleteLastChild(ListParent *L, string nipSales);
+void deleteAtChild(ListParent *L, string nipSales, string nomorProperti);
+void tampilProperti(addressChild C);
 
 #endif
