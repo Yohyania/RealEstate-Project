@@ -470,7 +470,7 @@ Pola mengikuti praktikum GD6/GD7: angka dengan `scanf`, teks dengan `fflush(stdi
 lalu `gets`, dan jeda dengan `getch`. Tidak ada fungsi bantu tambahan di `main.c`.
 
 | Jenis input | Cara | Alasan |
-|---|---|---|
+| --- | --- | --- |
 | nomor menu | `scanf("%d", &menuUtama)` | langsung membaca angka, tidak perlu konversi manual |
 | teks (NIP, nama, telepon) | `fflush(stdin);` lalu `gets(dataSales.NIP);` | spasi ikut terbaca (`Andi Wijaya`); `fflush` membuang newline sisa `scanf` |
 | jeda antar aksi | `getch();` dari `conio.h` | menunggu satu tombol tanpa perlu menekan Enter |
@@ -525,7 +525,7 @@ dari `scanf` tidak membuat jeda terlewati.
 ### 7.4 Menu yang masih placeholder
 
 | Menu | Perilaku sekarang |
-|---|---|
+| --- | --- |
 | `[2] Properti` | `err("Menu Properti Belum Tersedia")` |
 | `[3] JualProperti` | `err("Fitur Jual Properti Belum Tersedia")` |
 | `[4] Laporan Owner` | `err("Menu Laporan Belum Tersedia")` |
@@ -540,7 +540,7 @@ Menu diuji dengan build sebelum pola input disesuaikan ke `scanf` + `fflush` +
 Fungsi parent sendiri diuji lewat driver terpisah:
 
 | Skenario | Hasil |
-|---|---|
+| --- | --- |
 | tambah 1001 Andi, 1002 Budi | `[*] Data Sales Berhasil Dimasukkan [*]` dua kali |
 | tambah 1002 lagi | `[!] NIP Sales Sudah Terdaftar [!]` |
 | ubah 1001 (NIP dikosongkan, nama "Andi Wijaya") | `[*] Data Sales Berhasil Diubah [*]` |
