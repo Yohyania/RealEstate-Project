@@ -1,676 +1,545 @@
-# Penjelasan Kode — RealEstate XYZ (MultiList)
+# Alur Kode — RealEstate XYZ (MultiList)
 
-Dokumen ini menjelaskan isi `header.h`, `source.c`, dan `main.c` **sesuai kondisi kode saat ini**.
-Fokus pembahasan: struktur data MultiList, **seluruh fungsi parent (Sales)**, dan
-menu interaktif untuk mengelola sales.
-
-> Status: fungsi parent dan menunya sudah lengkap serta lolos uji. Fungsi child
-> (Properti), fitur JualProperti, dan Laporan Owner belum dibuat, sehingga
-> menu 2–4 di program masih berupa pesan "belum tersedia".
+Dokumen ini menjelaskan **alur eksekusi dan alur data** program: mulai dari `main`,
+masuk ke menu, pemanggilan fungsi, hingga perubahan tersimpan di list. Fokusnya
+adalah hubungan antarfungsi dan urutan langkah, bukan deklarasi variabel.
 
 ---
 
-## 1. Gambaran Umum
+## 1. Peta File dalam Alur
 
-Perusahaan RealEstateXYZ punya dua entitas:
+| File | Peran dalam alur |
+| --- | --- |
+| `main.c` | Titik masuk. Membaca input user dan memilih fungsi yang dipanggil. |
+| `header.h` | Kontrak antarfile: tipe data, struct, dan prototipe fungsi. |
+| `source.c` | Implementasi: fungsi tampilan, fungsi parent, fungsi child. |
+| `tubes_prd.md` | Spesifikasi alur bisnis yang menjadi dasar program (tidak di-track git). |
 
-| Entitas | Peran di MultiList | Data yang dicatat |
-| --- | --- | --- |
-| Sales | **Parent** | NIP, Nama, Nomor Telepon, Total Penjualan |
-| Properti | **Child** | Nomor Properti, Jenis (Tanah/Rumah), Alamat, Harga |
+Alur antarfile:
 
-Satu sales bisa menangani banyak properti (relasi **one-to-many**), dan setiap sales
-adalah node dalam satu linked list. Inilah yang disebut **MultiList**: list parent
-(sales) yang setiap node-nya punya list child sendiri (properti).
+```
+main.c  --include-->  header.h  <--include--  source.c
+   |                     |                       |
+   | memanggil fungsi    | prototipe             | implementasi
+   +-------------------->+---------------------->+
+```
+
+`main.c` tidak mendefinisikan fungsi selain `main`. Setiap pemanggilan fungsi
+mengarah ke implementasi di `source.c` melalui prototipe di `header.h`.
 
 ---
 
-## 2. Struktur File & Cara Kompilasi
+## 2. Data yang Mengalir di List
 
-```
-RealEstate-Project-Fork/
-├── header.h    -> tipe data, struct, prototipe fungsi
-├── source.c    -> implementasi fungsi tampilan & MultiList
-├── main.c      -> menu nested switch-case + input dari user
-└── RealEstate.dev -> project file Dev-C++
-```
-
-Kompilasi lewat terminal:
-
-```bash
-gcc -Wall -Wextra main.c source.c -o RealEstate.exe
-```
-
-Jalankan dengan:
-
-```bash
-RealEstate.exe
-```
-
-Atau buka `RealEstate.dev` di Dev-C++ lalu tekan **F11**.
-
----
-
-## 3. Struktur Data (`header.h`)
-
-### 3.1 Tipe bantuan
-
-```c
-typedef char string[100];
-typedef struct tChild *addressChild;
-typedef struct tParent *addressParent;
-```
-
-- `string` adalah alias `char[100]`, jadi setiap field teks maksimal 99 karakter
-  - penutup `'\0'`.
-- `addressChild` / `addressParent` adalah **pointer** ke node. Ditulis terpisah
-  (forward declaration) supaya `NodeParent` boleh menunjuk `NodeChild` dan
-  sebaliknya tanpa urutan deklarasi yang rumit.
-
-### 3.2 Data yang disimpan
+Alur data berpusat pada satu variabel `ListParent L` di `main`.
 
 ```c
 typedef struct {
     string nomorProperti;
-    string jenis;        // "tanah" atau "rumah"
+    string jenis;
     string alamat;
     int harga;
-} DataChild;             // isi data properti
+} DataChild;
 
 typedef struct {
     string NIP;
     string nama;
     string nomorTelpon;
     int totalPenjualan;
-} DataParent;            // isi data sales
-```
+} DataParent;
 
-Struct `Data*` sengaja dipisah dari `Node*`. Tujuannya: saat menambah data, kita
-cukup mengirim satu paket `DataParent` ke fungsi insert, tanpa harus mengurus
-pointer. Pointer hanya diurus di dalam fungsi alokasi.
-
-### 3.3 Node dan list
-
-```c
 typedef struct tChild {
     DataChild dataChild;
-    addressChild nextChild;   // properti berikutnya milik sales yang sama
+    addressChild nextChild;
 } NodeChild;
 
 typedef struct tParent {
     DataParent dataParent;
-    addressParent nextParent; // sales berikutnya
-    addressChild firstChild;  // kepala list properti milik sales ini
+    addressParent nextParent;
+    addressChild firstChild;
 } NodeParent;
 
 typedef struct {
-    addressParent first;      // kepala list sales
+    addressParent first;
 } ListParent;
 ```
 
-### 3.4 Bentuk di memori
+Peta alur data di memori:
 
 ```
-ListParent
-  └── first
-        │
-        ▼
-   ┌─────────────┐   nextParent   ┌─────────────┐   nextParent
-   │ Sales 1002  │ ─────────────> │ Sales 1001  │ ─────────────> NULL
-   │ Budi        │                │ Andi        │
-   └──────┬──────┘                └──────┬──────┘
-          │ firstChild                   │ firstChild
-          ▼                              ▼
-   ┌─────────────┐   nextChild     ┌─────────────┐
-   │ P01 Rumah   │ ─────────────>  │ P05 Tanah   │ ───────────> NULL
-   └─────────────┘                 └─────────────┘
+L.first
+   |
+   v
+[Sales 1001] --nextParent--> [Sales 1002] --nextParent--> NULL
+   |                            |
+   | firstChild                 | firstChild
+   v                            v
+[P01 Rumah] --nextChild--> NULL  [P02 Tanah] --nextChild--> [P03 Rumah] --> NULL
 ```
 
-Dua hal penting:
+Artinya:
 
-1. `nextParent` menghubungkan sales ke sales lain (list parent).
-2. `firstChild` adalah **akar list terpisah**, bukan bagian dari rantai parent.
-   Jadi menghapus sales tidak otomatis menghapus propertinya — itu sebabnya
-   `deleteAtParent` menolak jika sales masih punya properti.
+- `L.first` adalah pintu masuk ke seluruh sales.
+- `nextParent` menghubungkan sales satu ke sales berikutnya.
+- `firstChild` adalah pintu masuk ke list properti milik sales tersebut.
+- `nextChild` menghubungkan properti satu ke properti berikutnya dalam sales yang sama.
+
+Setiap fungsi menerima `L` (atau `&L`) lalu bergerak mengikuti rantai ini.
 
 ---
 
-## 4. Fungsi Tampilan
+## 3. Alur Top-Level `main()`
 
-### 4.1 `err()` dan `suc()`
-
-```c
-void err(char *s) {
-    printf("\033[1;31m");                 // teks merah terang
-    printf("\n\t  [!] %s [!]\n", s);
-    printf("\033[0m");                    // reset warna
-}
+```
+main()
+ |
+ +-- inisialisasi(&L)                     -> L.first = NULL
+ |
+ +-- LOOP menu utama (do-while)
+ |    |
+ |    +-- showMenu()                      -> mencetak pilihan
+ |    +-- scanf("%d", &menuUtama)         -> membaca pilihan
+ |    +-- switch (menuUtama)
+ |         |
+ |         +-- 1  -> LOOP submenu Sales
+ |         +-- 2  -> LOOP submenu Properti
+ |         +-- 3  -> err("Fitur Jual Properti Belum Tersedia") + getch()
+ |         +-- 4  -> LOOP submenu Laporan
+ |         +-- 0  -> keluar dari loop utama
+ |         +-- default -> err("Menu Tidak Tersedia") + getch()
+ |
+ +-- system("cls")
+ +-- suc("Terima Kasih Telah Menggunakan Program Ini")
 ```
 
-`suc()` sama, hanya warnanya hijau (`\033[1;32m`) dan penandanya `[*]`.
-Semua pesan berhasil/gagal di program lewat dua fungsi ini supaya formatnya seragam.
-
-`\033[` adalah *ANSI escape sequence*. Di Windows 10/11 (Windows Terminal, cmd baru)
-warna tampil normal. Di cmd lama bisa muncul kode aneh — itu batasan terminal,
-bukan bug logika.
-
-### 4.2 Fungsi menu
-
-`showMenu()`, `menuSales()`, `menuProperti()`, `menuLaporan()` hanya bertugas
-**mencetak** pilihan. Mereka tidak membaca input, sehingga input tetap ditangani
-`main.c` (lihat bagian 7). Masing-masing diawali `system("cls")` agar layar bersih
-sebelum menu baru tampil (khusus Windows).
+`do-while` dipakai supaya menu tampil dan pilihan dibaca minimal sekali.
+Keluar dari loop terjadi ketika `menuUtama == 0`.
 
 ---
 
-## 5. Fungsi Dasar List
+## 4. Alur Submenu Sales
 
-### 5.1 `inisialisasi(ListParent *L)`
+### 4.1 Pembacaan pilihan
 
-```c
-L->first = NULL;
+```
+case 1 (menu utama)
+ |
+ +-- LOOP (do-while)
+ |    |
+ |    +-- menuSales()                  -> mencetak 5 pilihan
+ |    +-- scanf("%d", &pilihanSales)
+ |    +-- switch (pilihanSales)
+ |    |    |
+ |    |    +-- 1 -> Tambah Sales
+ |    |    +-- 2 -> Ubah Sales
+ |    |    +-- 3 -> Hapus Sales
+ |    |    +-- 4 -> Lihat Semua Sales
+ |    |    +-- 0 -> keluar submenu
+ |    |    +-- default -> err("Pilihan Tidak Tersedia")
+ |    |
+ |    +-- getch()
+ |    +-- ulang selama pilihanSales != 0
+ |
+ +-- break -> kembali ke menu utama
 ```
 
-Wajib dipanggil sebelum list dipakai. Tanpa ini, `L.first` berisi nilai sampah
-dan `isEmpty` bisa salah menilai (menganggap list berisi data padahal tidak).
+### 4.2 Alur `[1] Tambah Sales`
 
-### 5.2 `isEmpty(ListParent L)`
+```
+baca NIP
+  |
+  +-- NIP kosong? -> err("NIP Tidak Boleh Kosong") -> kembali ke switch
+  |
+  +-- baca Nama
+  +-- baca Nomor Telepon
+  +-- dataSales.totalPenjualan = 0
+  +-- insertLastParent(&L, dataSales)
+        |
+        +-- findParent(*L, NIP) -> cek apakah NIP sudah ada
+        +-- alokasiParent(dataSales) -> malloc + isi data + nextParent/firstChild = NULL
+        +-- L kosong? -> L->first = salesBaru
+        |              atau
+        |              traversal sampai nextParent == NULL -> sambung di ujung
+        +-- suc("Data Sales Berhasil Dimasukkan")
+```
 
-Mengembalikan `true` jika `L.first == NULL`. Perhatikan parameter dikirim
-**by value** (bukan pointer) karena fungsi ini hanya membaca, tidak mengubah list.
-Menyalin satu struct berisi satu pointer sangat murah.
+Urutan tampilan mengikuti urutan input karena yang dipakai adalah `insertLastParent`.
+
+### 4.3 Alur `[2] Ubah Sales`
+
+```
+isEmpty(L) ?
+  |
+  +-- ya  -> err("Data Sales Masih Kosong") -> kembali ke switch
+  |
+  +-- tidak
+       |
+       +-- baca nipLama
+       +-- findParent(L, nipLama)
+       |     |
+       |     +-- NULL -> err("Data Sales Tidak Ditemukan") -> kembali ke switch
+       |     +-- ketemu -> lanjut
+       |
+       +-- baca nipBaru
+       |     +-- kosong -> strcpy(nipBaru, nipLama)  (NIP tetap)
+       +-- dataSales.NIP = nipBaru
+       +-- baca Nama Baru
+       +-- baca Nomor Telepon Baru
+       +-- updateParent(&L, nipLama, dataSales)
+             |
+             +-- findParent(*L, nipLama) -> node yang akan diubah
+             +-- NIP berubah? -> findParent(*L, NIP baru) -> validasi
+             +-- strcpy NIP (jika berubah), nama, nomorTelpon
+             +-- suc("Data Sales Berhasil Diubah")
+```
+
+`totalPenjualan` tidak melewati jalur input: nilainya berasal dari akumulasi penjualan.
+
+### 4.4 Alur `[3] Hapus Sales`
+
+```
+baca nipLama
+baca nipPengganti            -> disiapkan untuk alur pengalihan properti
+  |
+  +-- deleteAtParent(&L, nipLama)
+        |
+        +-- isEmpty(*L) -> err("Data Sales Masih Kosong")
+        +-- traversal dengan dua penunjuk:
+        |     salesSebelumnya = NULL
+        |     salesTarget     = L->first
+        |     while (belum cocok && salesTarget != NULL) geser keduanya
+        +-- salesTarget == NULL -> err("Data Sales Tidak Ditemukan")
+        +-- haveChild(salesTarget) -> err("Sales Masih Memiliki Properti, Alihkan ...")
+        +-- lepas rantai:
+        |     salesSebelumnya == NULL -> L->first = salesTarget->nextParent
+        |     di tengah/akhir    -> salesSebelumnya->nextParent = salesTarget->nextParent
+        +-- free(salesTarget)
+        +-- suc("Data Sales Berhasil Dihapus")
+```
+
+### 4.5 Alur `[4] Lihat Semua Sales`
+
+```
+printAllParent(L)
+  |
+  +-- isEmpty(L) -> err("Data Sales Masih Kosong")
+  +-- salesSekarang = L.first
+  +-- while (salesSekarang != NULL)
+  |     +-- printParent(salesSekarang)
+  |           -> NIP, Nama, Nomor Telepon, Total Penjualan
+  |     +-- salesSekarang = salesSekarang->nextParent
+  +-- printf("Jumlah Sales : %d", countParent(L))
+```
+
+`countParent` melakukan traversal terpisah dari `L.first` sampai `NULL` untuk menghitung node.
 
 ---
 
-## 6. Fungsi Parent (Sales)
+## 5. Peta Alur Fungsi Parent
 
-### 6.1 `haveChild(addressParent sales)`
-
-**Tujuan:** mengecek apakah seorang sales masih menanggung properti.
-
-```c
-if (sales == NULL)          return false;   // pointer kosong = tidak punya
-if (sales->firstChild != NULL) return true; // ada child pertama = punya properti
-return false;
-```
-
-Dipakai `deleteAtParent` sebagai penjaga. Karena `firstChild` adalah kepala list
-properti, cukup cek apakah pointer itu `NULL`.
-
-### 6.2 `alokasiParent(DataParent dataBaru)`
-
-**Tujuan:** membuat satu node sales baru di heap.
-
-Langkah:
-
-1. `malloc(sizeof(NodeParent))` memesan memori seukuran satu node.
-2. Jika hasilnya `NULL` (memori habis), tampilkan error dan kembalikan `NULL`.
-3. Salin seluruh `dataBaru` ke `salesBaru->dataParent` (assignment struct, bukan `strcpy`).
-4. Set `nextParent = NULL` dan `firstChild = NULL` — **wajib**, karena `malloc`
-   tidak membersihkan memori; tanpa inisialisasi, pointer berisi sampah dan
-   traversal akan membaca alamat acak.
-5. Kembalikan node baru.
-
-Fungsi ini **tidak** menyambungkan node ke list. Penyambungan dilakukan
-`insertFirstParent` / `insertLastParent`.
-
-### 6.3 `findParent(ListParent L, string nipSales)`
-
-**Tujuan:** mencari node sales berdasarkan NIP, mengembalikan `addressParent`
-atau `NULL` jika tidak ada.
-
-```c
-if (isEmpty(L)) return NULL;
-if (strcmp(L.first->dataParent.NIP, nipSales) == 0) return L.first;
-
-temp.first = L.first->nextParent;      // "list tanpa node pertama"
-return findParent(temp, nipSales);     // ulangi untuk sisa list
-```
-
-Ini versi **rekursif**. Setiap pemanggilan memeriksa satu node; kalau bukan
-target, pencarian diulang untuk sisa list (`temp.first = L.first->nextParent`).
-
-Konsekuensi yang perlu diketahui:
-
-- List kosong menjadi *base case* (berhenti dan kembalikan `NULL`).
-- Kedalaman rekursi = jumlah sales. Aman untuk data tugas, tapi kalau nanti
-  jumlah sales sangat banyak, versi `while` lebih hemat stack.
-- NIP bersifat **unik**, jadi berhenti di kecocokan pertama sudah benar.
-
-### 6.4 `countParent(ListParent L)`
-
-```c
-salesSekarang = L.first;
-while (salesSekarang != NULL) {
-    jumlahSales++;
-    salesSekarang = salesSekarang->nextParent;
-}
-```
-
-Traversal standar sampai `NULL`, menghitung jumlah node. Akan dipakai laporan
-owner (misalnya "total sales: N").
-
-### 6.5 `insertFirstParent(ListParent *L, DataParent dataBaru)`
-
-**Tujuan:** menambah sales di depan list. Urutan data jadi terbalik dari urutan input.
-
-Alur:
-
-1. **Validasi duplikat** — `findParent(*L, dataBaru.NIP)`. Kalau ketemu, tampilkan
-   `NIP Sales Sudah Terdaftar` dan batal. Pengecekan ditaruh di sini supaya
-   aturan "NIP unik" dijamin di lapisan data, bukan hanya di menu.
-2. Alokasi node baru; kalau gagal, berhenti.
-3. Sambungkan: `salesBaru->nextParent = L->first`, lalu `L->first = salesBaru`.
-
-Urutan dua baris terakhir tidak boleh dibalik. Kalau `L->first` diubah dulu,
-alamat node lama hilang dan list terputus (memory leak).
-
-### 6.6 `insertLastParent(ListParent *L, DataParent dataBaru)`
-
-**Tujuan:** menambah sales di belakang sehingga urutan tampil sama dengan urutan input.
-
-Alur:
-
-1. Validasi duplikat NIP (sama seperti insert first).
-2. Alokasi node.
-3. Jika list kosong, node baru langsung jadi `L->first`. Jika tidak, traversal
-   `salesTerakhir` sampai `nextParent == NULL`, lalu `salesTerakhir->nextParent = salesBaru`.
-
-Operasi ini O(n) karena harus berjalan ke ujung list. Untuk data tugas ini
-tidak masalah; kalau perlu O(1), bisa ditambah pointer `last` di `ListParent`.
-
-### 6.7 `insertAfterParent(ListParent *L, string nipSebelum, DataParent dataBaru)`
-
-**Tujuan:** menyisipkan sales baru tepat setelah sales acuan (dicari lewat NIP).
-
-Alur:
-
-1. Kalau list masih kosong, delegasi ke `insertFirstParent`.
-2. Cari sales acuan (`nipSebelum`). Tidak ada → `Data Sales Sebelumnya Tidak Ditemukan`.
-3. Tolak kalau NIP sales baru sudah terdaftar.
-4. Alokasi node, lalu sambungkan:
-
-```c
-salesBaru->nextParent = salesSebelum->nextParent;
-salesSebelum->nextParent = salesBaru;
-```
-
-Baris pertama wajib lebih dulu. Kalau `salesSebelum->nextParent` ditimpa dulu,
-alamat sisa list setelahnya hilang dan list terputus.
-
-### 6.8 `updateParent(ListParent *L, string nipSales, DataParent dataBaru)`
-
-**Tujuan:** mengubah data sales yang sudah ada. `nipSales` = NIP lama (kunci
-pencarian), `dataBaru` = isi baru.
-
-Alur:
-
-1. Cari node dengan NIP lama. Tidak ada → `Data Sales Tidak Ditemukan`.
-2. Jika NIP **diganti**, cek dulu apakah NIP baru sudah dipakai sales lain
-   (`salesNipSama`). Kalau dipakai → `NIP Sales Sudah Digunakan`, batal.
-   Kalau NIP tidak berubah, pengecekan ini dilewati supaya tidak "menemukan
-   dirinya sendiri" dan menolak perubahan nama.
-3. Salin `nama` dan `nomorTelpon` dengan `strcpy`.
-
-**Yang sengaja tidak diubah:** `totalPenjualan`. Field ini akumulasi omzet dari
-properti yang terjual, bukan data yang diinput manual. Kalau bisa diedit bebas,
-laporan penjualan jadi tidak valid.
-
-### 6.9 `deleteFirstParent(ListParent *L)`
-
-**Tujuan:** menghapus sales pertama pada list.
-
-Alur:
-
-1. List kosong → `Data Sales Masih Kosong`.
-2. `haveChild(L->first)` true → tolak, properti harus dialihkan dulu.
-3. Simpan head ke `salesHapus`, geser `L->first = salesHapus->nextParent`, lalu `free`.
-
-### 6.10 `deleteLastParent(ListParent *L)`
-
-**Tujuan:** menghapus sales terakhir.
-
-Alur:
-
-1. List kosong → `Data Sales Masih Kosong`.
-2. Kalau hanya satu elemen (`L->first->nextParent == NULL`), delegasi ke `deleteFirstParent`.
-3. Selain itu, traversal sampai node **sebelum** terakhir:
-   `while (salesSebelumnya->nextParent->nextParent != NULL)`.
-4. Cek `haveChild` pada node terakhir. Kalau masih punya properti, hapus dibatalkan
-   dan rantai tidak diubah.
-5. Putuskan `salesSebelumnya->nextParent = NULL`, lalu `free(salesHapus)`.
-
-Pengecekan child dilakukan sebelum pemutusan rantai supaya list tidak berubah
-saat penghapusan ditolak.
-
-### 6.11 `deleteAtParent(ListParent *L, string nipSales)`
-
-**Tujuan:** menghapus node sales yang **tidak** punya properti.
-
-Linked-list satu arah tidak bisa mundur, jadi penghapusan butuh dua penunjuk:
-
-| Variabel | Peran |
-| --- | --- |
-| `salesTarget` | node yang sedang diperiksa / akan dihapus |
-| `salesSebelumnya` | node tepat sebelum `salesTarget`; `NULL` artinya target di kepala list |
-
-Alur:
-
-1. List kosong → `Data Sales Masih Kosong`.
-2. Geser kedua pointer sampai NIP cocok atau `salesTarget == NULL`.
-3. Tidak ketemu → `Data Sales Tidak Ditemukan`.
-4. `haveChild(salesTarget)` bernilai true → tolak dengan pesan agar properti
-   dialihkan dulu. Ini mencegah properti "menggantung" tanpa penanggung jawab.
-5. Lepas rantai:
-   - target di awal (`salesSebelumnya == NULL`) → `L->first = salesTarget->nextParent`
-   - target di tengah/akhir → `salesSebelumnya->nextParent = salesTarget->nextParent`
-6. `free(salesTarget)` mengembalikan memori ke sistem.
-
-Tanpa `free`, node tetap menempati memori walau sudah tidak bisa diakses
-(memory leak).
-
-### 6.12 `printParent(addressParent sales)`
-
-**Tujuan:** menampilkan satu node sales. Dipanggil `printAllParent` dan menu
-`[4] Lihat Semua Sales`.
-
-```c
-printf("\n\t === Data Sales ===");
-printf("\n\t[-] NIP             : %s", sales->dataParent.NIP);
-printf("\n\t[-] Nama            : %s", sales->dataParent.nama);
-printf("\n\t[-] Nomor Telepon   : %s", sales->dataParent.nomorTelpon);
-printf("\n\t[-] Total Penjualan : Rp %d", sales->dataParent.totalPenjualan);
-```
-
-### 6.13 `printAllParent(ListParent L)`
-
-**Tujuan:** traversal seluruh list parent dan mencetak tiap sales.
-
-Alur:
-
-1. List kosong → `Data Sales Masih Kosong` (tidak mencetak apa pun).
-2. Loop `salesSekarang` dari `L.first` sampai `NULL`, panggil `printParent`.
-3. Cetak jumlah sales lewat `countParent(L)` sebagai penutup.
-
-### 6.14 Ringkasan fungsi parent
-
-| Fungsi | Kompleksitas | Mengubah list | Catatan |
-| --- | --- | --- | --- |
-| `haveChild` | O(1) | tidak | cek `firstChild` |
-| `alokasiParent` | O(1) | tidak | `malloc` + inisialisasi pointer |
-| `findParent` | O(n) | tidak | rekursif, kunci NIP |
-| `countParent` | O(n) | tidak | hitung node |
-| `insertFirstParent` | O(1) | ya | tolak NIP duplikat |
-| `insertLastParent` | O(n) | ya | tolak NIP duplikat |
-| `insertAfterParent` | O(n) | ya | cari NIP acuan dulu |
-| `updateParent` | O(n) | ya | NIP baru divalidasi |
-| `deleteFirstParent` | O(1) | ya | hanya jika tanpa child |
-| `deleteLastParent` | O(n) | ya | delegasi ke delete first saat satu elemen |
-| `deleteAtParent` | O(n) | ya | hanya jika tanpa child |
-| `printParent` | O(1) | tidak | satu node |
-| `printAllParent` | O(n) | tidak | traversal + jumlah sales |
-
----
-
-## 7. Program Utama (`main.c`)
-
-`main.c` hanya berisi fungsi `main`. Tidak ada fungsi bantu yang dideklarasikan atau
-didefinisikan di file ini: semua fungsi lain prototipenya ada di `header.h` dan
-implementasinya di `source.c`.
-
-### 7.1 Struktur menu (nested switch-case)
-
-`main` memakai dua `do-while` bersarang, masing-masing dengan `switch` di dalamnya.
-Lapisan luar untuk menu utama, lapisan dalam untuk submenu Sales.
-
-```
-do {                                    // menu utama
-    showMenu();
-    scanf("%d", &menuUtama);
-
-    switch (menuUtama) {
-    case 1:                             // MENU SALES
-        do {                            // submenu
-            menuSales();
-            scanf("%d", &pilihanSales);
-
-            switch (pilihanSales) {
-            case 1: ... insertLastParent(&L, dataSales); break;
-            case 2: ... updateParent(&L, nipLama, dataSales); break;
-            case 3: ... deleteAtParent(&L, nipLama); break;
-            case 4: printAllParent(L); break;
-            case 0: break;              // kembali ke menu utama
-            default: err("Pilihan Tidak Tersedia"); break;
-            }
-            if (pilihanSales != 0)
-                getch();
-        } while (pilihanSales != 0);
-        break;
-
-    case 2: err("Menu Properti Belum Tersedia"); break;
-    case 3: err("Fitur Jual Properti Belum Tersedia"); break;
-    case 4: err("Menu Laporan Belum Tersedia"); break;
-    case 0: break;                      // keluar
-    default: err("Menu Tidak Tersedia"); break;
-    }
-} while (menuUtama != 0);
-```
-
-Kenapa `do-while`, bukan `while`? Karena menu harus tampil dan pilihan harus dibaca
-minimal satu kali. Kalau memakai `while (menuUtama != 0)` dengan variabel yang belum
-diisi, nilainya masih sampah dan program bisa langsung keluar.
-
-Nilai `0` pada submenu hanya mengakhiri loop dalam (`pilihanSales != 0`), lalu
-`break` mengembalikan kendali ke menu utama. Nilai `0` pada menu utama mengakhiri
-loop luar sehingga program selesai.
-
-### 7.2 Cara membaca input
-
-Pola mengikuti praktikum GD6/GD7: angka dengan `scanf`, teks dengan `fflush(stdin)`
-lalu `gets`, dan jeda dengan `getch`. Tidak ada fungsi bantu tambahan di `main.c`.
-
-| Jenis input | Cara | Alasan |
+| Fungsi | Dipanggil dari | Alur singkat |
 | --- | --- | --- |
-| nomor menu | `scanf("%d", &menuUtama)` | langsung membaca angka, tidak perlu konversi manual |
-| teks (NIP, nama, telepon) | `fflush(stdin);` lalu `gets(dataSales.NIP);` | spasi ikut terbaca (`Andi Wijaya`); `fflush` membuang newline sisa `scanf` |
-| jeda antar aksi | `getch();` dari `conio.h` | menunggu satu tombol tanpa perlu menekan Enter |
+| `inisialisasi` | `main` | `L->first = NULL` sebelum list dipakai. |
+| `isEmpty` | semua fungsi insert/delete/print | `L.first == NULL` → `true`. |
+| `haveChild` | `deleteFirstParent`, `deleteLastParent`, `deleteAtParent` | Cek `sales->firstChild`. |
+| `alokasiParent` | `insertFirstParent`, `insertLastParent`, `insertAfterParent` | `malloc` → salin data → `nextParent`/`firstChild` = `NULL`. |
+| `findParent` | insert/update/delete, semua fungsi child | Rekursif: cek head → cocok? → kembalikan node, atau lanjut ke `nextParent`. |
+| `countParent` | `printAllParent` | Traversal `L.first` sampai `NULL`, menghitung node. |
+| `insertFirstParent` | `insertAfterParent` saat list kosong | `findParent` (duplikat) → alokasi → sambung di depan → `suc`. |
+| `insertLastParent` | menu `[1] Tambah Sales` | `findParent` (duplikat) → alokasi → sambung di belakang → `suc`. |
+| `insertAfterParent` | (tersedia sebagai fungsi) | List kosong → `insertFirstParent`; sebaliknya cari acuan → cek duplikat → sambung setelah acuan. |
+| `updateParent` | menu `[2] Ubah Sales` | `findParent` NIP lama → validasi NIP baru → `strcpy` field → `suc`. |
+| `deleteFirstParent` | `deleteLastParent` saat satu elemen | Cek kosong → `haveChild` → geser head → `free` → `suc`. |
+| `deleteLastParent` | (tersedia sebagai fungsi) | Cek kosong → satu elemen? delegasi → traversal ke node sebelum terakhir → `haveChild` → putus → `free`. |
+| `deleteAtParent` | menu `[3] Hapus Sales` | Traversal dua penunjuk → `haveChild` → lepas rantai → `free` → `suc`. |
+| `printParent` | `printAllParent` | Cetak empat field satu sales. |
+| `printAllParent` | menu `[4] Lihat Semua Sales` | Traversal → `printParent` tiap node → `countParent`. |
 
-`fflush(stdin)` sebenarnya bukan operasi standar C, tetapi berfungsi di Windows
-(Dev-C++/MinGW) dan memang dipakai di kode praktikum. Kalau program dipindah ke
-Linux, bagian ini harus diganti `while (getchar() != '\n');`.
+Rantai pemanggilan khas untuk operasi sales:
 
-Jeda diletakkan sekali di akhir setiap iterasi submenu:
-
-```c
-if (pilihanSales != 0)
-    getch();
+```
+main -> insertLastParent -> findParent
+                         -> alokasiParent -> malloc
+main -> updateParent     -> findParent -> strcpy
+main -> deleteAtParent   -> isEmpty -> haveChild -> free
+main -> printAllParent   -> printParent + countParent
 ```
 
-Karena `getch()` membaca langsung dari keyboard (bukan buffer `stdin`), sisa newline
-dari `scanf` tidak membuat jeda terlewati.
+---
 
-### 7.3 Alur submenu Sales
+## 6. Alur Submenu Properti
 
-**`[1] Tambah Sales`**
+```
+case 2 (menu utama)
+ |
+ +-- LOOP (do-while)
+ |    |
+ |    +-- menuProperti()            -> mencetak: Tambah, Ubah, Hapus, Kembali
+ |    +-- bacaan pilihan properti
+ |    +-- switch (pilihan properti)
+ |    |    +-- 1 / 2 / 3 -> kembali ke akhir iterasi loop
+ |    |    +-- 0         -> keluar submenu
+ |    |    +-- default   -> err("Pilihan Tidak Tersedia")
+ |    |
+ |    +-- getch()
+ |    +-- ulang selama pilihan != 0
+ |
+ +-- break -> kembali ke menu utama
+```
 
-1. Minta NIP. Kalau kosong (`strcmp(..., "") == 0`), tampilkan error dan kembali ke submenu.
-2. Minta Nama dan Nomor Telepon.
-3. Set `dataSales.totalPenjualan = 0` — sales baru belum menjual apa pun.
-4. `insertLastParent(&L, dataSales)`. Dipilih *last* (bukan *first*) supaya urutan
-   tampil sama dengan urutan input.
-5. Pesan berhasil/gagal keluar dari `insertLastParent`, termasuk penolakan NIP duplikat.
+Alur di submenu ini berhenti di `switch`: belum ada pemanggilan fungsi child dari
+`main`. Fungsi-fungsi child sendiri sudah tersedia di `source.c` dan alurnya
+dijelaskan di bagian berikutnya.
 
-**`[2] Ubah Sales`**
+---
 
-1. Minta NIP lama, lalu `findParent` dicek lebih dulu. Kalau tidak ada, proses
-   dihentikan tanpa menyuruh user mengetik data baru.
-2. Minta NIP baru. Kosong berarti NIP tetap: `strcpy(nipBaru, nipLama)`.
-3. Minta Nama Baru dan Nomor Telepon Baru.
-4. `updateParent(&L, nipLama, dataSales)` melakukan validasi NIP dan penyalinan field.
+## 7. Alur Fungsi Child (Properti)
 
-**`[3] Hapus Sales`**
+### 7.1 Pola umum
 
-1. Minta NIP.
-2. `deleteAtParent(&L, nipLama)` menangani pencarian dan penolakan jika sales masih
-   punya properti.
+Setiap fungsi child diawali dengan mencari sales pemilik properti:
 
-**`[4] Lihat Semua Sales`**
+```
+fungsi child(ListParent *L, string nipSales, ...)
+ |
+ +-- P = findParent(*L, nipSales)
+ |     |
+ |     +-- P == NULL -> pesan "Parent tidak ada" -> selesai
+ |     +-- P ketemu  -> lanjut ke P->firstChild
+ |
+ +-- operasi pada P->firstChild
+       |
+       +-- insert / update / delete / tampil
+```
 
-1. Memanggil `printAllParent(L)`.
-2. Menampilkan NIP, nama, telepon, total penjualan tiap sales, lalu jumlah sales.
-3. Kalau list kosong, muncul `Data Sales Masih Kosong`.
+`P` adalah `addressParent` sales yang bersangkutan; seluruh properti berada di
+rantai `P->firstChild -> nextChild -> ...`.
 
-**`[0] Kembali`** keluar dari submenu tanpa mengubah list.
+### 7.2 Alur pembuatan dan pencarian node
 
-### 7.4 Menu yang masih placeholder
+```
+alokasiChild(DataChild data)
+  -> malloc(sizeof(NodeChild))
+  -> C->dataChild = data
+  -> C->nextChild = NULL
+  -> kembalikan C ke fungsi pemanggil
 
-| Menu | Perilaku sekarang |
+findChild(addressChild C, string nomorProperti)
+  -> C == NULL ? kembalikan NULL
+  -> nomor cocok ? kembalikan C
+  -> selainnya: findChild(C->nextChild, nomorProperti)   [rekursif]
+```
+
+### 7.3 Alur insert
+
+**`insertFirstChild`**
+
+```
+P ditemukan -> C = alokasiChild(dataBaru)
+            -> C->nextChild = P->firstChild
+            -> P->firstChild = C
+            -> pesan "Insert First Child"
+```
+
+Properti baru menjadi kepala list child sales tersebut.
+
+**`insertLastChild`**
+
+```
+P ditemukan -> C = alokasiChild(dataBaru)
+            -> P->firstChild == NULL ? P->firstChild = C
+            -> selainnya:
+                 temp = P->firstChild
+                 while (temp->nextChild != NULL) temp = temp->nextChild
+                 temp->nextChild = C
+            -> pesan "Insert Last Child"
+```
+
+**`insertAtChild`**
+
+```
+P ditemukan -> posisi == 1 -> insertFirstChild(L, nipSales, dataBaru)
+            -> posisi > 1:
+                 temp = P->firstChild
+                 i = 1
+                 while (temp != NULL && i < posisi - 1) { temp = temp->nextChild; i++ }
+                 C = alokasiChild(dataBaru)
+                 C->nextChild = temp->nextChild
+                 temp->nextChild = C
+            -> pesan "Insert At Child"
+```
+
+### 7.4 Alur update
+
+```
+updateChild(L, nipSales, nomorProperti, dataBaru)
+ |
+ +-- P = findParent(*L, nipSales)
+ +-- C = findChild(P->firstChild, nomorProperti)
+ +-- C == NULL -> "Data Properti Tidak Ditemukan"
+ +-- C ketemu:
+ |     -> nomor properti lama disalin ke dataBaru
+ |     -> C->dataChild = dataBaru
+ |     -> "Data Properti Berhasil Diubah"
+```
+
+Jadi kunci `nomorProperti` dipakai untuk mencari node, lalu isi `DataChild`
+disalin sebagai satu paket ke node tersebut.
+
+### 7.5 Alur delete
+
+**`deleteFirstChild`**
+
+```
+P ditemukan -> P->firstChild == NULL ? "Data Properti Kosong"
+            -> hapus = P->firstChild
+            -> P->firstChild = hapus->nextChild
+            -> free(hapus)
+            -> "Delete First Child"
+```
+
+**`deleteLastChild`**
+
+```
+P ditemukan -> kosong? -> "Data Properti Kosong"
+            -> satu elemen? -> free(P->firstChild); P->firstChild = NULL
+            -> lebih dari satu:
+                 C = P->firstChild
+                 while (C->nextChild->nextChild != NULL) C = C->nextChild
+                 free(C->nextChild)
+                 C->nextChild = NULL
+            -> "Delete Last Child"
+```
+
+**`deleteAtChild`**
+
+```
+P ditemukan -> P->firstChild == NULL ? "Data Properti Kosong"
+            -> head cocok? -> deleteFirstChild(L, nipSales)
+            -> selainnya:
+                 C = P->firstChild
+                 while (C->nextChild != NULL && nomor C->nextChild != target)
+                     C = C->nextChild
+                 C->nextChild == NULL ? "Data Properti Tidak Ditemukan"
+                 hapus = C->nextChild
+                 C->nextChild = hapus->nextChild
+                 free(hapus)
+            -> "Delete At Child"
+```
+
+### 7.6 Alur tampil
+
+```
+tampilProperti(addressChild C)
+  -> C == NULL ? selesai
+  -> cetak "[nomor] jenis | alamat | Rp harga"
+  -> tampilProperti(C->nextChild)     [rekursif]
+```
+
+### 7.7 Peta alur fungsi child
+
+| Fungsi | Alur pemanggilan |
 | --- | --- |
-| `[2] Properti` | `err("Menu Properti Belum Tersedia")` |
-| `[3] JualProperti` | `err("Fitur Jual Properti Belum Tersedia")` |
-| `[4] Laporan Owner` | `err("Menu Laporan Belum Tersedia")` |
-
-Semuanya hanya menampilkan pesan lalu `getch()`, sehingga struktur menu sudah
-final dan tinggal diisi ketika fungsi child dibuat.
-
-### 7.5 Hasil uji
-
-Menu diuji dengan build sebelum pola input disesuaikan ke `scanf` + `fflush` +
-`gets`. Perilakunya tidak berubah karena yang diganti hanya cara membaca input.
-Fungsi parent sendiri diuji lewat driver terpisah:
-
-| Skenario | Hasil |
-| --- | --- |
-| tambah 1001 Andi, 1002 Budi | `[*] Data Sales Berhasil Dimasukkan [*]` dua kali |
-| tambah 1002 lagi | `[!] NIP Sales Sudah Terdaftar [!]` |
-| ubah 1001 (NIP dikosongkan, nama "Andi Wijaya") | `[*] Data Sales Berhasil Diubah [*]` |
-| hapus 1001 | `[*] Data Sales Berhasil Dihapus [*]` |
-| `[4] Lihat Semua Sales` | daftar NIP/nama/telepon + jumlah sales |
-| `insertAfterParent` setelah 1001 | urutan menjadi 1002, 1001, 1004, 1003 |
-| `deleteFirstParent` / `deleteLastParent` | node ujung terhapus, jumlah berkurang |
-| hapus sales yang punya child | ditolak, list tidak berubah |
-| hapus saat list kosong | `[!] Data Sales Masih Kosong [!]` |
-| `0` lalu `0` | keluar + pesan terima kasih |
+| `alokasiChild` | Dipanggil semua fungsi insert; mengembalikan node ke pemanggil. |
+| `findChild` | Dipanggil `updateChild`; rekursif di `nextChild`. |
+| `insertFirstChild` | `findParent` → `alokasiChild` → sambung di head. |
+| `insertLastChild` | `findParent` → `alokasiChild` → traversal → sambung di tail. |
+| `insertAtChild` | `findParent` → (`insertFirstChild` atau traversal + `alokasiChild`). |
+| `updateChild` | `findParent` → `findChild` → assign `DataChild`. |
+| `deleteFirstChild` | `findParent` → geser head → `free`; dipanggil juga `deleteAtChild`. |
+| `deleteLastChild` | `findParent` → traversal ke sebelum tail → `free`. |
+| `deleteAtChild` | `findParent` → (`deleteFirstChild` atau traversal dua penunjuk) → `free`. |
+| `tampilProperti` | Rekursif dari `firstChild` sampai `NULL`. |
 
 ---
 
-## 8. Contoh Alur Data
-
-Misal input berurutan: Andi (1001), Budi (1002), Citra (1003).
-
-**Setelah `insertFirstParent` untuk Andi dan Budi, lalu `insertLastParent` untuk Citra:**
+## 8. Alur Jual Properti
 
 ```
-first -> [1002 Budi] -> [1001 Andi] -> [1003 Citra] -> NULL
+case 3 (menu utama)
+ |
+ +-- err("Fitur Jual Properti Belum Tersedia")
+ +-- getch()
+ +-- kembali ke loop menu utama
 ```
 
-Budi ada di depan karena `insertFirstParent` menyisipkan di kepala; Citra di
-belakang karena `insertLastParent`. Lewat menu `[1] Sales`, program memakai
-`insertLastParent`, sehingga urutan tampil sama dengan urutan input.
-
-**`insertLastParent` dengan NIP 1002 lagi:**
-
-```
-[!] NIP Sales Sudah Terdaftar [!]
-```
-
-Jumlah sales tetap 3.
-
-**`deleteAtParent(L, "1001")` saat Andi masih punya properti:**
-
-```
-[!] Sales Masih Memiliki Properti, Alihkan Properti Terlebih Dahulu [!]
-```
-
-Setelah properti Andi dialihkan/dikosongkan (nanti lewat fitur child), pemanggilan
-yang sama berhasil dan list menjadi:
-
-```
-first -> [1002 Budi] -> [1003 Citra] -> NULL
-```
+Belum ada pemanggilan fungsi child pada jalur ini.
 
 ---
 
-## 9. Aturan Bisnis yang Sudah Diterapkan
+## 9. Alur Laporan Owner
 
-| Aturan dari soal | Implementasi saat ini |
-| --- | --- |
-| NIP sales unik | validasi di `insertFirstParent`, `insertLastParent`, `insertAfterParent`, `updateParent` |
-| Total penjualan adalah akumulasi | tidak bisa diubah manual di `updateParent` |
-| Sales resign → properti dialihkan dulu | `deleteAtParent` menolak jika `haveChild` true |
-| Sales dihapus setelah properti dialihkan | penghapusan menunggu list child kosong (fitur child menyusul) |
-| Sales dikelola lewat menu | submenu `[1] Sales`: tambah, ubah, hapus, dan lihat semua sales |
-| Data properti, jual properti, laporan | belum diimplementasikan (menu masih placeholder) |
+```
+case 4 (menu utama)
+ |
+ +-- LOOP (do-while)
+ |    |
+ |    +-- menuLaporan()
+ |    |      -> [1] Daftar Nama Sales
+ |    |      -> [2] Properti Belum Terjual per Jenis
+ |    |      -> [3] Jumlah Properti per Jenis
+ |    |      -> [0] Kembali
+ |    |
+ |    +-- bacaan pilihan laporan
+ |    +-- switch (pilihan)
+ |    |      -> 1 / 2 / 3 / 0 : kembali ke akhir iterasi
+ |    |      -> default : err("Pilihan Tidak Tersedia")
+ |    |
+ |    +-- ulang selama pilihan != 0
+ |
+ +-- break -> kembali ke menu utama
+```
 
----
-
-## 10. Konvensi Penamaan
-
-Variabel dibuat deskriptif agar mudah dibaca saat presentasi:
-
-| Nama | Arti |
-| --- | --- |
-| `salesBaru` | node sales hasil alokasi yang belum tersambung |
-| `salesSekarang` | node yang sedang ditunjuk saat traversal |
-| `salesTerakhir` | node terakhir pada list (untuk insert di belakang) |
-| `salesDiubah` | node sales yang datanya sedang diubah |
-| `salesNipSama` | sales lain yang sudah memakai NIP baru (calon bentrok) |
-| `salesSebelumnya` | node sebelum target pada proses hapus |
-| `salesTarget` | node yang dicari / akan dihapus |
-| `salesHapus` | node yang sudah dilepas dari rantai dan akan di-`free` |
-| `salesSebelum` | node acuan pada `insertAfterParent` |
-| `nipSebelum` | NIP sales acuan pada `insertAfterParent` |
-| `jumlahSales` | hasil hitung `countParent` |
-| `dataBaru` | paket data yang akan dimasukkan/dipakai |
-| `dataSales` | paket data sales yang diisi dari input menu |
-| `nipLama` | NIP sales yang dicari, diubah, atau dihapus |
-| `nipBaru` | NIP pengganti saat ubah data (kosong = tetap) |
-| `salesDicari` | hasil `findParent` untuk cek sebelum mengubah data |
-| `menuUtama` | pilihan pada menu utama |
-| `pilihanSales` | pilihan pada submenu Sales |
+Jalur ini belum memanggil fungsi pembaca data; alur berhenti di `switch`.
 
 ---
 
-## 11. Catatan Teknis
+## 10. Alur Input dan Tampilan
 
-- **`typedef char string[100]`** membuat parameter `string` sebenarnya
-  `char[100]`. Kalau fungsi dipanggil dengan string literal
-  (`findParent(L, "1003")`), GCC bisa memberi warning `-Wstringop-overflow`.
-  Di program asli argumennya variabel `string nipSales`, jadi warning ini tidak muncul.
-- **`malloc` tidak membersihkan memori.** Semua pointer di node baru harus
-  di-set eksplisit; ini alasan `alokasiParent` mengisi `nextParent` dan `firstChild`.
-- **`free` hanya membebaskan satu node.** Menghapus sales tidak otomatis
-  membebaskan propertinya — itu sebabnya `deleteAtParent` dijaga `haveChild`.
-- **`gets` membaca satu baris penuh tanpa menyimpan newline.** Cocok untuk nama
-  yang mengandung spasi. Kekurangannya, panjang input tidak dibatasi, jadi buffer
-  tujuan wajib bertipe `string` (100 byte) dan input harus wajar. GCC modern
-  memberi warning `Using gets() is always unsafe`; untuk tugas ini warning itu
-  bisa diabaikan, tetapi di program nyata sebaiknya pakai `fgets` + buang newline.
-- **`fflush(stdin)` dipakai sebelum `gets`** untuk membuang newline sisa `scanf`.
-  Ini perilaku non-standar C, tetapi berfungsi di Dev-C++/MinGW dan memang pola
-  yang dipakai praktikum. Di Linux, ganti dengan `while (getchar() != '\n');`.
-- **`getch()` membaca langsung dari keyboard**, bukan dari buffer `stdin`, sehingga
-  sisa newline tidak membuat jeda terlewati. Karena itu `conio.h` ikut di-include
-  di `header.h`.
-- **Gaya penulisan mengikuti praktikum GD6/GD7:** indentasi 4 spasi, brace K&R
-  (`{` di baris yang sama), banner `///////PARENT///////`, dan satu deklarasi per
-  baris untuk struct.
-- **Warning `argc`/`argv` tidak dipakai** berasal dari template `main` bawaan,
-  bukan kesalahan logika. Bisa dihilangkan dengan menulis `int main(void)`.
-- `system("cls")` dan pewarnaan ANSI membuat program berjalan baik di Windows.
-  Di Linux, `cls` perlu diganti `clear`.
+### 10.1 Alur input
+
+```
+angka menu   -> scanf("%d", ...)              -> variabel pilihan
+teks         -> fflush(stdin) -> gets(...)    -> field bertipe string
+jeda         -> getch()                       -> menunggu satu tombol
+```
+
+`fflush(stdin)` mengosongkan newline yang tertinggal setelah `scanf`, sehingga
+`gets` membaca baris teks berikutnya. `getch()` membaca langsung dari keyboard,
+bukan dari buffer `stdin`, sehingga jeda tidak terlewat karena newline sisa.
+
+### 10.2 Alur pesan
+
+```
+err("...") -> warna merah -> "\n\t  [!] pesan [!]\n" -> reset warna
+suc("...") -> warna hijau -> "\n\t  [*] pesan [*]\n" -> reset warna
+```
+
+Fungsi parent memakai `err`/`suc` untuk hasil operasi. Fungsi child mencetak
+pesannya langsung dengan `printf` di akhir tiap operasi. Fungsi menu
+(`showMenu`, `menuSales`, `menuProperti`, `menuLaporan`) hanya mencetak daftar
+pilihan; pembacaan pilihan tetap dilakukan di `main`.
 
 ---
 
-## 12. Langkah Berikutnya
+## 11. Contoh Alur Data End-to-End
 
-1. Fungsi child: `alokasiChild`, `insertFirstChild`, `insertLastChild`,
-   `findChild`, `deleteChild`, `countChild`.
-2. Validasi nomor properti unik **global** (menelusuri semua sales).
-3. Isi submenu `[2] Properti`: tambah, ubah, dan hapus properti milik sales tertentu.
-4. `JualProperti` untuk menu `[3]`: hapus child dari list sales, lalu
-   `totalPenjualan += harga properti`.
-5. `SalesResign`: pindahkan seluruh child ke sales pengganti, lalu hapus parent
-   (setelah itu `deleteAtParent` bisa dipakai karena `firstChild` sudah kosong).
-6. Tiga laporan owner untuk menu `[4]`: daftar nama sales, properti belum terjual
-   per jenis, dan jumlah properti per jenis.
+Misal user memilih `[1] Sales`, `[1] Tambah Sales`, lalu mengisi Andi (1001),
+Budi (1002), Citra (1003).
+
+| Langkah | Pemanggilan | Kondisi `L` setelah langkah |
+| --- | --- | --- |
+| 1 | `inisialisasi(&L)` | `L.first = NULL` |
+| 2 | `insertLastParent(&L, Andi)` | `1001` |
+| 3 | `insertLastParent(&L, Budi)` | `1001 -> 1002` |
+| 4 | `insertLastParent(&L, Citra)` | `1001 -> 1002 -> 1003` |
+| 5 | `updateParent(&L, "1001", data)` | data Andi berubah, posisi tetap |
+| 6 | `insertLastChild(&L, "1001", P01)` | `1001(firstChild: P01) -> 1002 -> 1003` |
+| 7 | `printAllParent(L)` | cetak 3 sales + `Jumlah Sales : 3` |
+| 8 | `tampilProperti(P->firstChild)` | cetak `P01` milik Andi |
+| 9 | `deleteAtChild(&L, "1001", "P01")` | child Andi kosong |
+| 10 | `deleteAtParent(&L, "1001")` | `1002 -> 1003` |
+
+Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node
+properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dipakai
+lagi sebelum node properti dilepas dari rantai child.
