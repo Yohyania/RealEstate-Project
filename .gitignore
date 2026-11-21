@@ -60,3 +60,4 @@ Makefile.win
 *.exe
 .clang-format
 tubes_prd.md
+AGENT.md

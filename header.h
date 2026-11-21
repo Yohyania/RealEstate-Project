@@ -43,10 +43,10 @@ typedef struct {
 //////////////////////Fungsi Tampilan////////////////////////////
 void err(char *s);   // Menampilkan pesan error (merah)
 void suc(char *s);   // Menampilkan pesan berhasil (hijau)
-void showMenu();     // Menampilkan menu utama
-void menuSales();    // Menampilkan menu sales
-void menuProperti(); // Menampilkan menu properti
-void menuLaporan();  // Menampilkan menu laporan owner
+void showMenu();        // Menampilkan menu utama
+void menuSales();       // Menampilkan menu sales
+void menuProperti();    // Menampilkan menu properti
+void menuLaporan();     // Menampilkan menu laporan owner
 
 //////////////////////Fungsi List////////////////////////////////
 void inisialisasi(ListParent *L); // Menginisialisasikan LIST
@@ -68,7 +68,7 @@ void printParent(addressParent sales);                                         /
 void printAllParent(ListParent L);                                             // Menampilkan semua data sales
 
 //////////////////////Fungsi Child///////////////////////////////
-addressChild alokasiChild (DataChild dataChild);                                                 
+addressChild alokasiChild (DataChild dataChild);
 addressChild findChild(addressChild C, string nomorProperti);
 void insertFirstChild(ListParent *L, string nipSales, DataChild dataBaru);
 void insertLastChild(ListParent *L, string nipSales, DataChild dataBaru);
