@@ -354,7 +354,7 @@ void insertFirstChild(ListParent *L, string nipSales,  DataChild dataBaru){
 	
 	P = findParent((*L), nipSales);
 	if(P == NULL){
-		printf("\n\t\t[!} Parent tidak ada [!]");
+		printf("\n\t\t[!] Parent tidak ada [!]");
 	}else{
 		C = alokasiChild(dataBaru);
 		C->nextChild = P->firstChild;

@@ -74,9 +74,15 @@ void insertFirstChild(ListParent *L, string nipSales, DataChild dataBaru);
 void insertLastChild(ListParent *L, string nipSales, DataChild dataBaru);
 void insertAtChild(ListParent *L, string nipSales, DataChild dataBaru, int input);
 void updateChild(ListParent *L, string nipSales, string nomorProperti ,DataChild dataBaru);
-void deleteFirtsChild(ListParent *L, string nipsSales);
+void deleteFirstChild(ListParent *L, string nipsSales);
 void deleteLastChild(ListParent *L, string nipSales);
 void deleteAtChild(ListParent *L, string nipSales, string nomorProperti);
 void tampilProperti(addressChild C);
+
+////////////////////// Laporan Owner & Transaksi ///////////////////////////////
+void jualProperti(ListParent L); // belum pasti
+void laporanNamaSales(ListParent L);
+void laporanBelumTerjual(ListParent L, string jenis);
+void laporanJumlahJenis(ListParent L);
 
 #endif
