@@ -4,6 +4,34 @@ Dokumen ini menjelaskan **alur eksekusi dan alur data** program: mulai dari `mai
 masuk ke menu, pemanggilan fungsi, hingga perubahan tersimpan di list. Fokusnya
 adalah hubungan antarfungsi dan urutan langkah, bukan deklarasi variabel.
 
+## Daftar Isi
+
+- [1. Peta File dalam Alur](#1-peta-file-dalam-alur)
+- [2. Data yang Mengalir di List](#2-data-yang-mengalir-di-list)
+- [3. Alur Top-Level `main()`](#3-alur-top-level-main)
+- [4. Alur Submenu Sales](#4-alur-submenu-sales)
+  - [4.1 Pembacaan pilihan](#41-pembacaan-pilihan)
+  - [4.2 Alur `[1] Tambah Sales`](#42-alur-1-tambah-sales)
+  - [4.3 Alur `[2] Ubah Sales`](#43-alur-2-ubah-sales)
+  - [4.4 Alur `[3] Hapus Sales`](#44-alur-3-hapus-sales)
+  - [4.5 Alur `[4] Lihat Semua Sales`](#45-alur-4-lihat-semua-sales)
+- [5. Peta Alur Fungsi Parent](#5-peta-alur-fungsi-parent)
+- [6. Alur Submenu Properti](#6-alur-submenu-properti)
+- [7. Alur Fungsi Child (Properti)](#7-alur-fungsi-child-properti)
+  - [7.1 Pola umum](#71-pola-umum)
+  - [7.2 Alur pembuatan dan pencarian node](#72-alur-pembuatan-dan-pencarian-node)
+  - [7.3 Alur insert](#73-alur-insert)
+  - [7.4 Alur update](#74-alur-update)
+  - [7.5 Alur delete](#75-alur-delete)
+  - [7.6 Alur tampil](#76-alur-tampil)
+  - [7.7 Peta alur fungsi child](#77-peta-alur-fungsi-child)
+- [8. Alur Jual Properti](#8-alur-jual-properti)
+- [9. Alur Laporan Owner](#9-alur-laporan-owner)
+- [10. Alur Input dan Tampilan](#10-alur-input-dan-tampilan)
+  - [10.1 Alur input](#101-alur-input)
+  - [10.2 Alur pesan](#102-alur-pesan)
+- [11. Contoh Alur Data End-to-End](#11-contoh-alur-data-end-to-end)
+
 ---
 
 ## 1. Peta File dalam Alur
@@ -145,27 +173,49 @@ case 1 (menu utama)
 
 ### 4.2 Alur `[1] Tambah Sales`
 
+Tiap field divalidasi oleh loop `do { ... } while (!isValid)` masing-masing.
+Kalau satu field salah, hanya field itu yang ditanyakan lagi; field yang sudah
+benar tidak perlu diisi ulang dan program tidak kembali ke menu.
+
 ```
-baca NIP
+isValid = true
+
+LOOP NIP
   |
-  +-- NIP kosong? -> err("NIP Tidak Boleh Kosong") -> kembali ke switch
+  +-- baca dataSales.NIP
+  +-- kosong? -> err("NIP Tidak Boleh Kosong") -> isValid = false
+  +-- findParent(L, dataSales.NIP) != NULL? -> err("NIP Sudah Terdaftar") -> isValid = false
+  +-- ulang selama !isValid
+
+LOOP Nama
   |
-  +-- baca Nama
-  +-- baca Nomor Telepon
-  +-- dataSales.totalPenjualan = 0
-  +-- insertLastParent(&L, dataSales)
-        |
-        +-- findParent(*L, NIP) -> cek apakah NIP sudah ada
-        +-- alokasiParent(dataSales) -> malloc + isi data + nextParent/firstChild = NULL
-        +-- L kosong? -> L->first = salesBaru
-        |              atau
-        |              traversal sampai nextParent == NULL -> sambung di ujung
-        +-- suc("Data Sales Berhasil Dimasukkan")
+  +-- baca dataSales.nama
+  +-- kosong? -> err("Nama Tidak Boleh Kosong") -> isValid = false
+  +-- ulang selama !isValid
+
+LOOP Nomor Telepon
+  |
+  +-- baca dataSales.nomorTelpon
+  +-- kosong? -> err("Nomor Telepon Tidak Boleh Kosong") -> isValid = false
+  +-- ulang selama !isValid
+
+dataSales.totalPenjualan = 0
+insertLastParent(&L, dataSales)
+  |
+  +-- alokasiParent(dataSales) -> malloc + isi data + nextParent/firstChild = NULL
+  +-- L kosong? -> L->first = salesBaru
+  |              atau
+  |              traversal sampai nextParent == NULL -> sambung di ujung
+  +-- suc("Data Sales Berhasil Dimasukkan")
 ```
 
 Urutan tampilan mengikuti urutan input karena yang dipakai adalah `insertLastParent`.
+Pengecekan NIP duplikat juga terjadi di dalam `insertLastParent` sebagai pengaman.
 
 ### 4.3 Alur `[2] Ubah Sales`
+
+Sama seperti Tambah Sales, tiap field punya loop validasi sendiri. NIP lama yang
+tidak ditemukan juga ditanyakan ulang di tempat, bukan kembali ke menu.
 
 ```
 isEmpty(L) ?
@@ -174,20 +224,28 @@ isEmpty(L) ?
   |
   +-- tidak
        |
-       +-- baca nipLama
-       +-- findParent(L, nipLama)
+       +-- LOOP NIP lama
        |     |
-       |     +-- NULL -> err("Data Sales Tidak Ditemukan") -> kembali ke switch
-       |     +-- ketemu -> lanjut
+       |     +-- baca nip
+       |     +-- kosong? -> err("NIP Tidak Boleh Kosong") -> isValid = false
+       |     +-- findParent(L, nip) == NULL? -> err("Data Sales Tidak Ditemukan") -> isValid = false
+       |     +-- ulang selama !isValid
        |
-       +-- baca nipBaru
-       |     +-- kosong -> strcpy(nipBaru, nipLama)  (NIP tetap)
-       +-- dataSales.NIP = nipBaru
-       +-- baca Nama Baru
-       +-- baca Nomor Telepon Baru
-       +-- updateParent(&L, nipLama, dataSales)
+       +-- LOOP NIP baru
+       |     |
+       |     +-- baca nipBaru
+       |     +-- kosong? -> strcpy(nipBaru, nip)  (NIP tetap)
+       |     +-- beda dari nip dan findParent(L, nipBaru) != NULL?
+       |     |     -> err("NIP Sudah Digunakan Sales Lain") -> isValid = false
+       |     +-- ulang selama !isValid
+       |     +-- strcpy(dataSales.NIP, nipBaru)
+       |
+       +-- LOOP Nama Baru (kosong -> err -> ulang)
+       +-- LOOP Nomor Telepon Baru (kosong -> err -> ulang)
+       |
+       +-- updateParent(&L, nip, dataSales)
              |
-             +-- findParent(*L, nipLama) -> node yang akan diubah
+             +-- findParent(*L, nip) -> node yang akan diubah
              +-- NIP berubah? -> findParent(*L, NIP baru) -> validasi
              +-- strcpy NIP (jika berubah), nama, nomorTelpon
              +-- suc("Data Sales Berhasil Diubah")
@@ -198,24 +256,45 @@ isEmpty(L) ?
 ### 4.4 Alur `[3] Hapus Sales`
 
 ```
-baca nipLama
-baca nipPengganti            -> disiapkan untuk alur pengalihan properti
+isEmpty(L) ?
   |
-  +-- deleteAtParent(&L, nipLama)
-        |
-        +-- isEmpty(*L) -> err("Data Sales Masih Kosong")
-        +-- traversal dengan dua penunjuk:
-        |     salesSebelumnya = NULL
-        |     salesTarget     = L->first
-        |     while (belum cocok && salesTarget != NULL) geser keduanya
-        +-- salesTarget == NULL -> err("Data Sales Tidak Ditemukan")
-        +-- haveChild(salesTarget) -> err("Sales Masih Memiliki Properti, Alihkan ...")
-        +-- lepas rantai:
-        |     salesSebelumnya == NULL -> L->first = salesTarget->nextParent
-        |     di tengah/akhir    -> salesSebelumnya->nextParent = salesTarget->nextParent
-        +-- free(salesTarget)
-        +-- suc("Data Sales Berhasil Dihapus")
+  +-- ya  -> err("Data Sales Masih Kosong") -> kembali ke switch
+  |
+  +-- tidak
+       |
+       +-- LOOP NIP sales
+       |     |
+       |     +-- baca nip
+       |     +-- kosong? -> err("NIP Tidak Boleh Kosong") -> isValid = false
+       |     +-- findParent(L, nip) == NULL? -> err("Data Sales Tidak Ditemukan") -> isValid = false
+       |     +-- ulang selama !isValid
+       |
+       +-- LOOP NIP pengganti
+       |     |
+       |     +-- baca nipBaru
+       |     +-- kosong? -> err("NIP Pengganti Tidak Boleh Kosong") -> isValid = false
+       |     +-- sama dengan nip? -> err("Sales Pengganti Harus Berbeda") -> isValid = false
+       |     +-- findParent(L, nipBaru) == NULL? -> err("Sales Pengganti Tidak Ditemukan") -> isValid = false
+       |     +-- ulang selama !isValid
+       |
+       +-- deleteAtParent(&L, nip)
+             |
+             +-- isEmpty(*L) -> err("Data Sales Masih Kosong")
+             +-- traversal dengan dua penunjuk:
+             |     salesSebelumnya = NULL
+             |     salesTarget     = L->first
+             |     while (belum cocok && salesTarget != NULL) geser keduanya
+             +-- salesTarget == NULL -> err("Data Sales Tidak Ditemukan")
+             +-- haveChild(salesTarget) -> err("Sales Masih Memiliki Properti, Alihkan ...")
+             +-- lepas rantai:
+             |     salesSebelumnya == NULL -> L->first = salesTarget->nextParent
+             |     di tengah/akhir    -> salesSebelumnya->nextParent = salesTarget->nextParent
+             +-- free(salesTarget)
+             +-- suc("Data Sales Berhasil Dihapus")
 ```
+
+`nipBaru` belum dipakai untuk memindahkan properti; pengalihan properti sesuai
+PRD poin 4 masih menjadi pekerjaan berikutnya.
 
 ### 4.5 Alur `[4] Lihat Semua Sales`
 
@@ -540,6 +619,4 @@ Budi (1002), Citra (1003).
 | 9 | `deleteAtChild(&L, "1001", "P01")` | child Andi kosong |
 | 10 | `deleteAtParent(&L, "1001")` | `1002 -> 1003` |
 
-Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node
-properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dipakai
-lagi sebelum node properti dilepas dari rantai child.
+Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dipakailagi sebelum node properti dilepas dari rantai child.
