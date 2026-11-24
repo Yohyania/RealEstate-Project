@@ -339,7 +339,7 @@ addressChild alokasiChild (DataChild dataChild){
 	addressChild C = (addressChild)malloc(sizeof(NodeChild));
 	C->dataChild = dataChild;
 	C->nextChild = NULL;
-	return C;	
+	return C;
 }
 
 addressChild findChild(addressChild C, string nomorProperti){
@@ -351,7 +351,7 @@ addressChild findChild(addressChild C, string nomorProperti){
 void insertFirstChild(ListParent *L, string nipSales,  DataChild dataBaru){
 	addressChild C;
 	addressParent P;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t[!] Parent tidak ada [!]");
@@ -359,7 +359,7 @@ void insertFirstChild(ListParent *L, string nipSales,  DataChild dataBaru){
 		C = alokasiChild(dataBaru);
 		C->nextChild = P->firstChild;
 		P->firstChild = C;
-		
+
 		printf("\n\t\t [!] Insert First Child [!]");
 	}
 }
@@ -367,7 +367,7 @@ void insertFirstChild(ListParent *L, string nipSales,  DataChild dataBaru){
 void insertLastChild(ListParent *L, string nipSales,  DataChild dataBaru){
 	addressChild C, temp;
 	addressParent P;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -390,7 +390,7 @@ void insertAtChild(ListParent *L, string nipSales,  DataChild dataBaru, int inpu
 	addressChild C, temp;
 	addressParent P;
 	int i = 1;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -411,7 +411,7 @@ void insertAtChild(ListParent *L, string nipSales,  DataChild dataBaru, int inpu
 				C = alokasiChild(dataBaru);
 				C->nextChild = temp->nextChild;
 				temp->nextChild = C;
-				
+
 				printf("\n\t\t [!] Insert At Child [!]");
 			}
 		}
@@ -421,7 +421,7 @@ void insertAtChild(ListParent *L, string nipSales,  DataChild dataBaru, int inpu
 void updateChild(ListParent *L, string nipSales, string nomorProperti, DataChild dataBaru){
 	addressParent P;
 	addressChild C;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -434,13 +434,13 @@ void updateChild(ListParent *L, string nipSales, string nomorProperti, DataChild
 			C->dataChild = dataBaru;
 			printf("\n\t\t [!] Data Properti Berhasil Diubah [!]");
 		}
-	}	
+	}
 }
 
 void deleteFirstChild(ListParent *L, string nipSales){
 	addressParent P;
 	addressChild hapus;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -453,13 +453,13 @@ void deleteFirstChild(ListParent *L, string nipSales){
 			free(hapus);
 			printf("\n\t\t [!] Delete First Child [!]");
 		}
-	}	
+	}
 }
 
 void deleteLastChild(ListParent *L, string nipSales){
 	addressParent P;
 	addressChild C;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -485,7 +485,7 @@ void deleteLastChild(ListParent *L, string nipSales){
 void deleteAtChild(ListParent *L, string nipSales, string nomorProperti){
 	addressParent P;
 	addressChild C, hapus;
-	
+
 	P = findParent((*L), nipSales);
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
@@ -513,10 +513,10 @@ void deleteAtChild(ListParent *L, string nipSales, string nomorProperti){
 
 void tampilProperti(addressChild C){
 	if(C != NULL){
-		printf("\n\t\t- [%s] %s | %s | Rp %d", 
-			C->dataChild.nomorProperti, 
-			C->dataChild.jenis, 
-			C->dataChild.alamat, 
+		printf("\n\t\t- [%s] %s | %s | Rp %d",
+			C->dataChild.nomorProperti,
+			C->dataChild.jenis,
+			C->dataChild.alamat,
 			C->dataChild.harga);
 		tampilProperti(C->nextChild);
 	}

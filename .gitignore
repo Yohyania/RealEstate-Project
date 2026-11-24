@@ -60,3 +60,5 @@ Makefile.win
 *.exe
 .clang-format
 tubes_prd.md
+AGENT.md
+GIT_NOTES.md
