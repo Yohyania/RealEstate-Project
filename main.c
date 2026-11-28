@@ -29,24 +29,31 @@ int main(int argc, char *argv[]) {
                     switch (pilihanSales) {
                         case 1: { /* Tambah Sales */
                             system("cls");
-                            bool isValid;
+                            bool isValid, batal = false;
 
                             printf("\n\t--- TAMBAH SALES ---\n");
 
                             do {
                                 isValid = true;
-                                printf("\tNIP           : ");
+                                printf("\tNIP   (kosongkan untuk batal): ");
                                 fflush(stdin);
                                 gets(dataSales.NIP);
                                 if (strcmp(dataSales.NIP, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
+                                    break;
                                 } else if (findParent(L, dataSales.NIP) != NULL) {
                                     err("NIP Sudah Terdaftar");
-
+                                    isValid = false;
+                                } else if (strlen(dataSales.NIP) < 5) {
+                                    err("NIP Tidak Boleh Kurang dari 5 Digit");
                                     isValid = false;
                                 }
                             } while (!isValid);
+
+                            if (batal) {
+                                err("Penambahan Dibatalkan");
+                                break;
+                            }
 
                             do {
                                 isValid = true;
