@@ -6,31 +6,33 @@ adalah hubungan antarfungsi dan urutan langkah, bukan deklarasi variabel.
 
 ## Daftar Isi
 
-- [1. Peta File dalam Alur](#1-peta-file-dalam-alur)
-- [2. Data yang Mengalir di List](#2-data-yang-mengalir-di-list)
-- [3. Alur Top-Level `main()`](#3-alur-top-level-main)
-- [4. Alur Submenu Sales](#4-alur-submenu-sales)
-  - [4.1 Pembacaan pilihan](#41-pembacaan-pilihan)
-  - [4.2 Alur `[1] Tambah Sales`](#42-alur-1-tambah-sales)
-  - [4.3 Alur `[2] Ubah Sales`](#43-alur-2-ubah-sales)
-  - [4.4 Alur `[3] Hapus Sales`](#44-alur-3-hapus-sales)
-  - [4.5 Alur `[4] Lihat Semua Sales`](#45-alur-4-lihat-semua-sales)
-- [5. Peta Alur Fungsi Parent](#5-peta-alur-fungsi-parent)
-- [6. Alur Submenu Properti](#6-alur-submenu-properti)
-- [7. Alur Fungsi Child (Properti)](#7-alur-fungsi-child-properti)
-  - [7.1 Pola umum](#71-pola-umum)
-  - [7.2 Alur pembuatan dan pencarian node](#72-alur-pembuatan-dan-pencarian-node)
-  - [7.3 Alur insert](#73-alur-insert)
-  - [7.4 Alur update](#74-alur-update)
-  - [7.5 Alur delete](#75-alur-delete)
-  - [7.6 Alur tampil](#76-alur-tampil)
-  - [7.7 Peta alur fungsi child](#77-peta-alur-fungsi-child)
-- [8. Alur Jual Properti](#8-alur-jual-properti)
-- [9. Alur Laporan Owner](#9-alur-laporan-owner)
-- [10. Alur Input dan Tampilan](#10-alur-input-dan-tampilan)
-  - [10.1 Alur input](#101-alur-input)
-  - [10.2 Alur pesan](#102-alur-pesan)
-- [11. Contoh Alur Data End-to-End](#11-contoh-alur-data-end-to-end)
+- [Alur Kode — RealEstate XYZ (MultiList)](#alur-kode--realestate-xyz-multilist)
+  - [Daftar Isi](#daftar-isi)
+  - [1. Peta File dalam Alur](#1-peta-file-dalam-alur)
+  - [2. Data yang Mengalir di List](#2-data-yang-mengalir-di-list)
+  - [3. Alur Top-Level `main()`](#3-alur-top-level-main)
+  - [4. Alur Submenu Sales](#4-alur-submenu-sales)
+    - [4.1 Pembacaan pilihan](#41-pembacaan-pilihan)
+    - [4.2 Alur `[1] Tambah Sales`](#42-alur-1-tambah-sales)
+    - [4.3 Alur `[2] Ubah Sales`](#43-alur-2-ubah-sales)
+    - [4.4 Alur `[3] Hapus Sales`](#44-alur-3-hapus-sales)
+    - [4.5 Alur `[4] Lihat Semua Sales`](#45-alur-4-lihat-semua-sales)
+  - [5. Peta Alur Fungsi Parent](#5-peta-alur-fungsi-parent)
+  - [6. Alur Submenu Properti](#6-alur-submenu-properti)
+  - [7. Alur Fungsi Child (Properti)](#7-alur-fungsi-child-properti)
+    - [7.1 Pola umum](#71-pola-umum)
+    - [7.2 Alur pembuatan dan pencarian node](#72-alur-pembuatan-dan-pencarian-node)
+    - [7.3 Alur insert](#73-alur-insert)
+    - [7.4 Alur update](#74-alur-update)
+    - [7.5 Alur delete](#75-alur-delete)
+    - [7.6 Alur tampil](#76-alur-tampil)
+    - [7.7 Peta alur fungsi child](#77-peta-alur-fungsi-child)
+  - [8. Alur Jual Properti](#8-alur-jual-properti)
+  - [9. Alur Laporan Owner](#9-alur-laporan-owner)
+  - [10. Alur Input dan Tampilan](#10-alur-input-dan-tampilan)
+    - [10.1 Alur input](#101-alur-input)
+    - [10.2 Alur pesan](#102-alur-pesan)
+  - [11. Contoh Alur Data End-to-End](#11-contoh-alur-data-end-to-end)
 
 ---
 
@@ -121,18 +123,25 @@ Setiap fungsi menerima `L` (atau `&L`) lalu bergerak mengikuti rantai ini.
 ```
 main()
  |
+ +-- char *itemUtama[]    = {Sales, Properti, Jual Properti, Laporan Owner, Exit}
+ |   char *itemSales[]    = {Tambah Sales, Ubah Sales, Hapus Sales, Lihat Semua Sales, Kembali}
+ |   char *itemProperti[] = {Tambah Properti, Ubah Properti, Hapus Properti, Kembali}
+ |   char *itemLaporan[]  = {Daftar Nama Sales, Properti Belum Terjual per Jenis,
+ |                           Jumlah Properti per Jenis, Kembali}
+ |
  +-- inisialisasi(&L)                     -> L.first = NULL
  |
  +-- LOOP menu utama (do-while)
  |    |
- |    +-- showMenu()                      -> mencetak pilihan
- |    +-- scanf("%d", &menuUtama)         -> membaca pilihan
+ |    +-- menuPanah("SISTEM ...", itemUtama, 5)
+ |    |      -> Up/Down memilih, Enter konfirmasi, Esc kembali
+ |    |      -> item terakhir (Exit) dikembalikan sebagai 0
  |    +-- switch (menuUtama)
  |         |
  |         +-- 1  -> LOOP submenu Sales
  |         +-- 2  -> LOOP submenu Properti
- |         +-- 3  -> err("Fitur Jual Properti Belum Tersedia") + getch()
- |         +-- 4  -> LOOP submenu Laporan
+ |         +-- 3  -> LOOP transaksi Jual Properti
+ |         +-- 4  -> LOOP submenu Laporan Owner
  |         +-- 0  -> keluar dari loop utama
  |         +-- default -> err("Menu Tidak Tersedia") + getch()
  |
@@ -141,7 +150,8 @@ main()
 ```
 
 `do-while` dipakai supaya menu tampil dan pilihan dibaca minimal sekali.
-Keluar dari loop terjadi ketika `menuUtama == 0`.
+Keluar dari loop terjadi ketika `menuUtama == 0` (item `Exit`, atau tombol `Esc`).
+Navigasi memakai `menuPanah` di `source.c`, bukan `scanf`.
 
 ---
 
@@ -154,18 +164,17 @@ case 1 (menu utama)
  |
  +-- LOOP (do-while)
  |    |
- |    +-- menuSales()                  -> mencetak 5 pilihan
- |    +-- scanf("%d", &pilihanSales)
+ |    +-- menuPanah("MENU SALES", itemSales, 5)
  |    +-- switch (pilihanSales)
  |    |    |
  |    |    +-- 1 -> Tambah Sales
  |    |    +-- 2 -> Ubah Sales
  |    |    +-- 3 -> Hapus Sales
  |    |    +-- 4 -> Lihat Semua Sales
- |    |    +-- 0 -> keluar submenu
+ |    |    +-- 0 -> keluar submenu (item "Kembali")
  |    |    +-- default -> err("Pilihan Tidak Tersedia")
  |    |
- |    +-- getch()
+ |    +-- if (pilihanSales != 0) getch()   -> jeda, kecuali saat "Kembali"
  |    +-- ulang selama pilihanSales != 0
  |
  +-- break -> kembali ke menu utama
@@ -182,9 +191,10 @@ isValid = true
 
 LOOP NIP
   |
-  +-- baca dataSales.NIP
-  +-- kosong? -> err("NIP Tidak Boleh Kosong") -> isValid = false
+  +-- baca dataSales.NIP dengan prompt "NIP   (kosongkan untuk batal): "
+  +-- kosong? -> batal = true -> keluar loop -> err("Penambahan Dibatalkan")
   +-- findParent(L, dataSales.NIP) != NULL? -> err("NIP Sudah Terdaftar") -> isValid = false
+  +-- strlen(dataSales.NIP) < 5? -> err("NIP Tidak Boleh Kurang dari 5 Digit") -> isValid = false
   +-- ulang selama !isValid
 
 LOOP Nama
@@ -353,22 +363,23 @@ case 2 (menu utama)
  |
  +-- LOOP (do-while)
  |    |
- |    +-- menuProperti()            -> mencetak: Tambah, Ubah, Hapus, Kembali
- |    +-- bacaan pilihan properti
- |    +-- switch (pilihan properti)
- |    |    +-- 1 / 2 / 3 -> kembali ke akhir iterasi loop
- |    |    +-- 0         -> keluar submenu
- |    |    +-- default   -> err("Pilihan Tidak Tersedia")
+ |    +-- menuPanah("MENU PROPERTI", itemProperti, 4)
+ |    +-- switch (pilihProperti)
+ |    |    +-- 1 -> insertLastChild(&L, nip, dataProperti)
+ |    |    +-- 2 -> updateChild(&L, nip, noProp, dataPropBaru)
+ |    |    +-- 3 -> deleteAtChild(&L, nip, noProp)
+ |    |    +-- 0 -> keluar submenu (item "Kembali")
+ |    |    +-- default -> err("Pilihan Tidak Tersedia")
  |    |
- |    +-- getch()
- |    +-- ulang selama pilihan != 0
+ |    +-- if (pilihProperti != 0) getch()   -> jeda, kecuali saat "Kembali"
+ |    +-- ulang selama pilihProperti != 0
  |
  +-- break -> kembali ke menu utama
 ```
 
-Alur di submenu ini berhenti di `switch`: belum ada pemanggilan fungsi child dari
-`main`. Fungsi-fungsi child sendiri sudah tersedia di `source.c` dan alurnya
-dijelaskan di bagian berikutnya.
+Sebelum memilih aksi, user diminta NIP sales; bila sales tidak ditemukan atau
+belum punya properti, pesan error ditampilkan dan iterasi dihentikan. Fungsi
+child dipanggil langsung dari `main`; detail alurnya dijelaskan di bagian berikutnya.
 
 ---
 
@@ -537,12 +548,29 @@ tampilProperti(addressChild C)
 ```
 case 3 (menu utama)
  |
- +-- err("Fitur Jual Properti Belum Tersedia")
- +-- getch()
- +-- kembali ke loop menu utama
+ +-- if (isEmpty(L)) -> err("Data sales masih kosong") -> getch() -> selesai
+ +-- printSalesDanProperti(L)              -> tampilkan data terupdate
+ |
+ +-- LOOP NIP sales (kosong? -> batal, findParent NULL? -> error)
+ +-- LOOP nomor properti (kosong? -> batal, findChild NULL? -> error)
+ |     +-- propDicari = findChild(salesDicari->firstChild, noProp)
+ |
+ +-- tampil detail transaksi (nama sales, properti, harga)
+ +-- LOOP konfirmasi: "y" / "n" (selain itu -> error)
+ |     +-- "n" -> err("Transaksi Penjualan dibatalkan")
+ |     +-- "y" -> jualProperti(&L, nip, noProp)
+ |                  |
+ |                  +-- P = findParent(*L, nipSales)
+ |                  +-- C = findChild(P->firstChild, nomorProperti)
+ |                  +-- P->dataParent.totalPenjualan += C->dataChild.harga
+ |                  +-- deleteAtChild(L, nipSales, nomorProperti)
+ |                  +-- suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui")
+ +-- getch() -> kembali ke loop menu utama
 ```
 
-Belum ada pemanggilan fungsi child pada jalur ini.
+Efek transaksi: node properti dilepas dari list child (jadi tidak lagi masuk
+laporan "belum terjual"), dan harganya terakumulasi ke `totalPenjualan` sales
+(muncul di laporan daftar nama sales).
 
 ---
 
@@ -553,23 +581,35 @@ case 4 (menu utama)
  |
  +-- LOOP (do-while)
  |    |
- |    +-- menuLaporan()
- |    |      -> [1] Daftar Nama Sales
- |    |      -> [2] Properti Belum Terjual per Jenis
- |    |      -> [3] Jumlah Properti per Jenis
- |    |      -> [0] Kembali
+ |    +-- menuPanah("MENU LAPORAN", itemLaporan, 4)
+ |    +-- switch (pilihLaporan)
+ |    |      |
+ |    |      +-- 1 -> laporanNamaSales(L)
+ |    |      |          -> NIP, nama, telepon, totalPenjualan, jumlah properti
+ |    |      |          -> diakhiri "Jumlah Sales : N"
+ |    |      |
+ |    |      +-- 2 -> printSalesDanProperti(L) -> data terupdate
+ |    |      |          -> LOOP NIP (kosong? -> batal, findParent NULL? -> error)
+ |    |      |          -> if (!haveChild(sales)) -> error, tanpa tanya jenis
+ |    |      |          -> LOOP jenis ("rumah"/"tanah", strcmpi)
+ |    |      |          -> laporanBelumTerjual(L, nip, jenis)
+ |    |      |               -> tampil properti yang jenisnya cocok
+ |    |      |               -> jumlah properti + total harga
+ |    |      |
+ |    |      +-- 3 -> laporanJumlahJenis(L)
+ |    |      |          -> rekap Tanah/Rumah per sales + total semua sales
+ |    |      |
+ |    |      +-- 0 -> keluar submenu (item "Kembali")
+ |    |      +-- default -> err("Pilihan Tidak Tersedia")
  |    |
- |    +-- bacaan pilihan laporan
- |    +-- switch (pilihan)
- |    |      -> 1 / 2 / 3 / 0 : kembali ke akhir iterasi
- |    |      -> default : err("Pilihan Tidak Tersedia")
- |    |
- |    +-- ulang selama pilihan != 0
+ |    +-- if (pilihLaporan != 0) getch()
+ |    +-- ulang selama pilihLaporan != 0
  |
  +-- break -> kembali ke menu utama
 ```
 
-Jalur ini belum memanggil fungsi pembaca data; alur berhenti di `switch`.
+Ketiga laporan bersifat read-only: tidak mengubah list. Properti yang sudah
+dijual tidak muncul di laporan case 2 karena node-nya dihapus `jualProperti`.
 
 ---
 
@@ -578,14 +618,19 @@ Jalur ini belum memanggil fungsi pembaca data; alur berhenti di `switch`.
 ### 10.1 Alur input
 
 ```
-angka menu   -> scanf("%d", ...)              -> variabel pilihan
-teks         -> fflush(stdin) -> gets(...)    -> field bertipe string
-jeda         -> getch()                       -> menunggu satu tombol
+navigasi menu -> getch() -> menuPanah()       -> angka pilihan (0 = Exit/Kembali)
+                            +-- Up (72) / Down (80) -> geser pilihan
+                            +-- Enter (13)          -> konfirmasi
+                            +-- Esc (27)            -> kembali (0)
+teks          -> fflush(stdin) -> gets(...)    -> field bertipe string
+jeda          -> if (pilihan != 0) getch()      -> menunggu satu tombol
 ```
 
-`fflush(stdin)` mengosongkan newline yang tertinggal setelah `scanf`, sehingga
-`gets` membaca baris teks berikutnya. `getch()` membaca langsung dari keyboard,
-bukan dari buffer `stdin`, sehingga jeda tidak terlewat karena newline sisa.
+`menuPanah` di `source.c` menggambar ulang menu setiap tombol ditekan dan
+mengembalikan `0` untuk item terakhir (`Exit`/`Kembali`). Karena navigasi tidak
+lagi memakai `scanf`, tidak ada newline sisa yang perlu dibersihkan sebelum
+`gets`. `fflush(stdin)` tetap dipakai sebelum `gets` sebagai pengaman. `getch()`
+membaca langsung dari keyboard, sehingga jeda tidak terlewat.
 
 ### 10.2 Alur pesan
 
@@ -595,9 +640,10 @@ suc("...") -> warna hijau -> "\n\t  [*] pesan [*]\n" -> reset warna
 ```
 
 Fungsi parent memakai `err`/`suc` untuk hasil operasi. Fungsi child mencetak
-pesannya langsung dengan `printf` di akhir tiap operasi. Fungsi menu
-(`showMenu`, `menuSales`, `menuProperti`, `menuLaporan`) hanya mencetak daftar
-pilihan; pembacaan pilihan tetap dilakukan di `main`.
+pesannya langsung dengan `printf` di akhir tiap operasi. Fungsi menu lama
+(`showMenu`, `menuSales`, `menuProperti`, `menuLaporan`) masih tersedia di
+`source.c` sebagai pencetak daftar, tetapi sudah tidak dipanggil dari `main`;
+navigasi sekarang seluruhnya lewat `menuPanah`.
 
 ---
 
@@ -616,7 +662,8 @@ Budi (1002), Citra (1003).
 | 6 | `insertLastChild(&L, "1001", P01)` | `1001(firstChild: P01) -> 1002 -> 1003` |
 | 7 | `printAllParent(L)` | cetak 3 sales + `Jumlah Sales : 3` |
 | 8 | `tampilProperti(P->firstChild)` | cetak `P01` milik Andi |
-| 9 | `deleteAtChild(&L, "1001", "P01")` | child Andi kosong |
-| 10 | `deleteAtParent(&L, "1001")` | `1002 -> 1003` |
+| 9 | `jualProperti(&L, "1001", "P01")` | `P01` dilepas, `totalPenjualan` Andi bertambah harga `P01` |
+| 10 | `laporanBelumTerjual(L, "1001", "rumah")` | `P01` sudah tidak muncul sebagai belum terjual |
+| 11 | `deleteAtParent(&L, "1001")` | `1002 -> 1003` |
 
-Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dipakailagi sebelum node properti dilepas dari rantai child.
+Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dan `findChild` dipakai sebelum harga diakumulasi dan node properti dilepas. Langkah 10 memperlihatkan bahwa menu 4 membaca hasil transaksi menu 3.

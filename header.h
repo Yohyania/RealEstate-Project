@@ -40,10 +40,10 @@ typedef struct {
 //////////////////////Fungsi Tampilan////////////////////////////
 void err(char *s);   // Menampilkan pesan error (merah)
 void suc(char *s);   // Menampilkan pesan berhasil (hijau)
-void showMenu();        // Menampilkan menu utama
-void menuSales();       // Menampilkan menu sales
-void menuProperti();    // Menampilkan menu properti
-void menuLaporan();     // Menampilkan menu laporan owner
+void showMenu();     // Menampilkan menu utama
+void menuSales();    // Menampilkan menu sales
+void menuProperti(); // Menampilkan menu properti
+void menuLaporan();  // Menampilkan menu laporan owner
 
 //////////////////////Fungsi List////////////////////////////////
 void inisialisasi(ListParent *L); // Menginisialisasikan LIST
@@ -65,12 +65,12 @@ void printParent(addressParent sales);                                         /
 void printAllParent(ListParent L);                                             // Menampilkan semua data sales
 
 //////////////////////Fungsi Child///////////////////////////////
-addressChild alokasiChild (DataChild dataChild);
+addressChild alokasiChild(DataChild dataChild);
 addressChild findChild(addressChild C, string nomorProperti);
 void insertFirstChild(ListParent *L, string nipSales, DataChild dataBaru);
 void insertLastChild(ListParent *L, string nipSales, DataChild dataBaru);
 void insertAtChild(ListParent *L, string nipSales, DataChild dataBaru, int input);
-void updateChild(ListParent *L, string nipSales, string nomorProperti ,DataChild dataBaru);
+void updateChild(ListParent *L, string nipSales, string nomorProperti, DataChild dataBaru);
 void deleteFirstChild(ListParent *L, string nipsSales);
 void deleteLastChild(ListParent *L, string nipSales);
 void deleteAtChild(ListParent *L, string nipSales, string nomorProperti);
@@ -78,12 +78,11 @@ void tampilProperti(addressChild C);
 void printSalesDanProperti(ListParent L);
 
 ////////////////////// Laporan Owner & Transaksi ///////////////////////////////
-void jualProperti(ListParent *L, string nipSales, string nomorProperti );
+void jualProperti(ListParent *L, string nipSales, string nomorProperti);
 void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
 void laporanBelumTerjual(ListParent L, string nipSales, string jenis);
 void laporanJumlahJenis(ListParent L);
 
-
-//arrow key
+// arrow key
 int menuPanah(char *judul, char *item[], int jumlah);

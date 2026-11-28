@@ -330,196 +330,191 @@ void printAllParent(ListParent L) {
     printf("\n\tJumlah Sales : %d", countParent(L));
 }
 
-
-
-
 //////////////CHILD/////////////////////////
 
-addressChild alokasiChild (DataChild dataChild){
-	addressChild C = (addressChild)malloc(sizeof(NodeChild));
-	C->dataChild = dataChild;
-	C->nextChild = NULL;
-	return C;
+addressChild alokasiChild(DataChild dataChild) {
+    addressChild C = (addressChild)malloc(sizeof(NodeChild));
+    C->dataChild = dataChild;
+    C->nextChild = NULL;
+    return C;
 }
 
-addressChild findChild(addressChild C, string nomorProperti){
-	if(C==NULL) return 	NULL;
-	if(strcmp(C->dataChild.nomorProperti, nomorProperti)==0) return C;
-	return findChild(C->nextChild, nomorProperti);
+addressChild findChild(addressChild C, string nomorProperti) {
+    if (C == NULL)
+        return NULL;
+    if (strcmp(C->dataChild.nomorProperti, nomorProperti) == 0)
+        return C;
+    return findChild(C->nextChild, nomorProperti);
 }
 
-void insertFirstChild(ListParent *L, string nipSales,  DataChild dataBaru){
-	addressChild C;
-	addressParent P;
+void insertFirstChild(ListParent *L, string nipSales, DataChild dataBaru) {
+    addressChild C;
+    addressParent P;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t[!] Parent tidak ada [!]");
-	}else{
-		C = alokasiChild(dataBaru);
-		C->nextChild = P->firstChild;
-		P->firstChild = C;
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t[!] Parent tidak ada [!]");
+    } else {
+        C = alokasiChild(dataBaru);
+        C->nextChild = P->firstChild;
+        P->firstChild = C;
 
-		printf("\n\t\t [!] Insert First Child [!]");
-	}
+        printf("\n\t\t [!] Insert First Child [!]");
+    }
 }
 
-void insertLastChild(ListParent *L, string nipSales,  DataChild dataBaru){
-	addressChild C, temp;
-	addressParent P;
+void insertLastChild(ListParent *L, string nipSales, DataChild dataBaru) {
+    addressChild C, temp;
+    addressParent P;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	}else{
-		C = alokasiChild(dataBaru);
-		if(P->firstChild == NULL){
-			P->firstChild = C;
-		}else{
-			temp = P->firstChild;
-			while(temp->nextChild != NULL){
-				temp = temp->nextChild;
-			}
-			temp->nextChild = C;
-		}
-		printf("\n\t\t [!] Insert Last Child [!]");
-	}
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        C = alokasiChild(dataBaru);
+        if (P->firstChild == NULL) {
+            P->firstChild = C;
+        } else {
+            temp = P->firstChild;
+            while (temp->nextChild != NULL) {
+                temp = temp->nextChild;
+            }
+            temp->nextChild = C;
+        }
+        printf("\n\t\t [!] Insert Last Child [!]");
+    }
 }
 
-void insertAtChild(ListParent *L, string nipSales,  DataChild dataBaru, int input){
-	addressChild C, temp;
-	addressParent P;
-	int i = 1;
+void insertAtChild(ListParent *L, string nipSales, DataChild dataBaru, int input) {
+    addressChild C, temp;
+    addressParent P;
+    int i = 1;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	}else{
-		if(input < 1){
-			printf("\n\t\t [!] Posisi tidak valid [!]");
-		}else if(input == 1){
-			insertFirstChild(L, nipSales, dataBaru);
-		}else{
-			temp = P->firstChild;
-			while(temp != NULL && i < input - 1){
-				temp = temp->nextChild;
-				i++;
-			}
-			if(temp == NULL){
-				printf("\n\t\t [!] Posisi melebihi jumlah properti [!]");
-			}else{
-				C = alokasiChild(dataBaru);
-				C->nextChild = temp->nextChild;
-				temp->nextChild = C;
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        if (input < 1) {
+            printf("\n\t\t [!] Posisi tidak valid [!]");
+        } else if (input == 1) {
+            insertFirstChild(L, nipSales, dataBaru);
+        } else {
+            temp = P->firstChild;
+            while (temp != NULL && i < input - 1) {
+                temp = temp->nextChild;
+                i++;
+            }
+            if (temp == NULL) {
+                printf("\n\t\t [!] Posisi melebihi jumlah properti [!]");
+            } else {
+                C = alokasiChild(dataBaru);
+                C->nextChild = temp->nextChild;
+                temp->nextChild = C;
 
-				printf("\n\t\t [!] Insert At Child [!]");
-			}
-		}
-	}
+                printf("\n\t\t [!] Insert At Child [!]");
+            }
+        }
+    }
 }
 
-void updateChild(ListParent *L, string nipSales, string nomorProperti, DataChild dataBaru){
-	addressParent P;
-	addressChild C;
+void updateChild(ListParent *L, string nipSales, string nomorProperti, DataChild dataBaru) {
+    addressParent P;
+    addressChild C;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	} else {
-		C = findChild(P->firstChild, nomorProperti);
-		if(C == NULL){
-			printf("\n\t\t [!] Data Properti Tidak Ditemukan [!]");
-		} else {
-			strcpy(dataBaru.nomorProperti, C->dataChild.nomorProperti);
-			C->dataChild = dataBaru;
-			printf("\n\t\t [!] Data Properti Berhasil Diubah [!]");
-		}
-	}
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        C = findChild(P->firstChild, nomorProperti);
+        if (C == NULL) {
+            printf("\n\t\t [!] Data Properti Tidak Ditemukan [!]");
+        } else {
+            strcpy(dataBaru.nomorProperti, C->dataChild.nomorProperti);
+            C->dataChild = dataBaru;
+            printf("\n\t\t [!] Data Properti Berhasil Diubah [!]");
+        }
+    }
 }
 
-void deleteFirstChild(ListParent *L, string nipSales){
-	addressParent P;
-	addressChild hapus;
+void deleteFirstChild(ListParent *L, string nipSales) {
+    addressParent P;
+    addressChild hapus;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	} else {
-		if(P->firstChild == NULL){
-			printf("\n\t\t [!] Data Properti Kosong [!]");
-		} else {
-			hapus = P->firstChild;
-			P->firstChild = hapus->nextChild;
-			free(hapus);
-			printf("\n\t\t [!] Delete First Child [!]");
-		}
-	}
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        if (P->firstChild == NULL) {
+            printf("\n\t\t [!] Data Properti Kosong [!]");
+        } else {
+            hapus = P->firstChild;
+            P->firstChild = hapus->nextChild;
+            free(hapus);
+            printf("\n\t\t [!] Delete First Child [!]");
+        }
+    }
 }
 
-void deleteLastChild(ListParent *L, string nipSales){
-	addressParent P;
-	addressChild C;
+void deleteLastChild(ListParent *L, string nipSales) {
+    addressParent P;
+    addressChild C;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	} else {
-		if(P->firstChild == NULL){
-			printf("\n\t\t [!] Data Properti Kosong [!]");
-		} else if(P->firstChild->nextChild == NULL){
-			free(P->firstChild);
-			P->firstChild = NULL;
-			printf("\n\t\t [!] Delete Last Child [!]");
-		} else {
-			C = P->firstChild;
-			while(C->nextChild->nextChild != NULL){
-				C = C->nextChild;
-			}
-			free(C->nextChild);
-			C->nextChild = NULL;
-			printf("\n\t\t [!] Delete Last Child [!]");
-		}
-	}
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        if (P->firstChild == NULL) {
+            printf("\n\t\t [!] Data Properti Kosong [!]");
+        } else if (P->firstChild->nextChild == NULL) {
+            free(P->firstChild);
+            P->firstChild = NULL;
+            printf("\n\t\t [!] Delete Last Child [!]");
+        } else {
+            C = P->firstChild;
+            while (C->nextChild->nextChild != NULL) {
+                C = C->nextChild;
+            }
+            free(C->nextChild);
+            C->nextChild = NULL;
+            printf("\n\t\t [!] Delete Last Child [!]");
+        }
+    }
 }
 
-void deleteAtChild(ListParent *L, string nipSales, string nomorProperti){
-	addressParent P;
-	addressChild C, hapus;
+void deleteAtChild(ListParent *L, string nipSales, string nomorProperti) {
+    addressParent P;
+    addressChild C, hapus;
 
-	P = findParent((*L), nipSales);
-	if(P == NULL){
-		printf("\n\t\t [!] Parent tidak ada [!]");
-	} else {
-		if(P->firstChild == NULL){
-			printf("\n\t\t [!] Data Properti Kosong [!]");
-		} else if(strcmp(P->firstChild->dataChild.nomorProperti, nomorProperti) == 0){
-			deleteFirstChild(L, nipSales);
-		} else {
-			C = P->firstChild;
-			while(C->nextChild != NULL && strcmp(C->nextChild->dataChild.nomorProperti, nomorProperti) != 0){
-				C = C->nextChild;
-			}
-			if(C->nextChild == NULL){
-				printf("\n\t\t [!] Data Properti Tidak Ditemukan [!]");
-			} else {
-				hapus = C->nextChild;
-				C->nextChild = hapus->nextChild;
-				free(hapus);
-				printf("\n\t\t [!] Delete At Child [!]");
-			}
-		}
-	}
+    P = findParent((*L), nipSales);
+    if (P == NULL) {
+        printf("\n\t\t [!] Parent tidak ada [!]");
+    } else {
+        if (P->firstChild == NULL) {
+            printf("\n\t\t [!] Data Properti Kosong [!]");
+        } else if (strcmp(P->firstChild->dataChild.nomorProperti, nomorProperti) == 0) {
+            deleteFirstChild(L, nipSales);
+        } else {
+            C = P->firstChild;
+            while (C->nextChild != NULL && strcmp(C->nextChild->dataChild.nomorProperti, nomorProperti) != 0) {
+                C = C->nextChild;
+            }
+            if (C->nextChild == NULL) {
+                printf("\n\t\t [!] Data Properti Tidak Ditemukan [!]");
+            } else {
+                hapus = C->nextChild;
+                C->nextChild = hapus->nextChild;
+                free(hapus);
+                printf("\n\t\t [!] Delete At Child [!]");
+            }
+        }
+    }
 }
 
-void tampilProperti(addressChild C){
-	if(C != NULL){
-		printf("\n\t\t- [%s] %s | %s | Rp %d",
-			C->dataChild.nomorProperti,
-			C->dataChild.jenis,
-			C->dataChild.alamat,
-			C->dataChild.harga);
-		tampilProperti(C->nextChild);
-	}
+void tampilProperti(addressChild C) {
+    if (C != NULL) {
+        printf("\n\t\t- [%s] %s | %s | Rp %d", C->dataChild.nomorProperti, C->dataChild.jenis, C->dataChild.alamat, C->dataChild.harga);
+        tampilProperti(C->nextChild);
+    }
 }
 
 void printSalesDanProperti(ListParent L) {
@@ -544,28 +539,26 @@ void printSalesDanProperti(ListParent L) {
     }
 }
 
-void jualProperti(ListParent *L, string nipSales, string nomorProperti ){
-	addressParent P;
-	addressChild C;
-	
-	P = findParent (*L, nipSales);
-	if (P == NULL){
-		err("Data tidak ditemukan");
-		return;
-	}
-	
-	C = findChild(P->firstChild, nomorProperti);
-	if(C == NULL){
-		err("Data Properti tidak ditemukan");
-		return;
-	}
-	
-	P->dataParent.totalPenjualan += C->dataChild.harga;
-	deleteAtChild(L, nipSales, nomorProperti);
-	suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui");
-	
-}
+void jualProperti(ListParent *L, string nipSales, string nomorProperti) {
+    addressParent P;
+    addressChild C;
 
+    P = findParent(*L, nipSales);
+    if (P == NULL) {
+        err("Data tidak ditemukan");
+        return;
+    }
+
+    C = findChild(P->firstChild, nomorProperti);
+    if (C == NULL) {
+        err("Data Properti tidak ditemukan");
+        return;
+    }
+
+    P->dataParent.totalPenjualan += C->dataChild.harga;
+    deleteAtChild(L, nipSales, nomorProperti);
+    suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui");
+}
 
 void pindahProperti(ListParent *L, string nipAsal, string nipTujuan) {
     addressParent asal, tujuan;
@@ -601,8 +594,7 @@ void pindahProperti(ListParent *L, string nipAsal, string nipTujuan) {
     suc("Properti Berhasil Dialihkan ke Sales Pengganti");
 }
 
-
-//arrow key
+// arrow key
 int menuPanah(char *judul, char *item[], int jumlah) {
     int pilihan = 0, i, key;
 
@@ -622,22 +614,21 @@ int menuPanah(char *judul, char *item[], int jumlah) {
             if (i == pilihan)
                 printf("\n\t\t\033[1;37m> %s\033[0m", item[i]);
             else
-                printf("\n\t\t  %s", item[i]);     /* spasi pengganti panah, supaya teks sejajar */
+                printf("\n\t\t  %s", item[i]); /* spasi pengganti panah, supaya teks sejajar */
         }
         printf("\n");
-		printf("\n\t  [Up/Down] Pilih    [Enter] Konfirmasi    [Esc] Kembali\n");
-		
-		
+        printf("\n\t  [Up/Down] Pilih    [Enter] Konfirmasi    [Esc] Kembali\n");
+
         key = getch();
-        if (key == 0 || key == 224) {            /* tombol khusus (panah) */
+        if (key == 0 || key == 224) { /* tombol khusus (panah) */
             key = getch();
-            if (key == 72)                        /* panah atas */
+            if (key == 72) /* panah atas */
                 pilihan = (pilihan - 1 + jumlah) % jumlah;
-            else if (key == 80)                   /* panah bawah */
+            else if (key == 80) /* panah bawah */
                 pilihan = (pilihan + 1) % jumlah;
-        } else if (key == 13) {                   /* Enter */
-            return (pilihan + 1) % jumlah;        /* item terakhir -> 0 */
-        } else if (key == 27) {                   /* Esc */
+        } else if (key == 13) {            /* Enter */
+            return (pilihan + 1) % jumlah; /* item terakhir -> 0 */
+        } else if (key == 27) {            /* Esc */
             return 0;
         }
     }
