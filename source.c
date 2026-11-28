@@ -688,8 +688,10 @@ void laporanNamaSales(ListParent L) {
     P = L.first;
     while (P != NULL) {
         jumlahProperti = 0;
-        for (C = P->firstChild; C != NULL; C = C->nextChild) {
+        C = P->firstChild;
+        while (C != NULL) {
             jumlahProperti++;
+            C = C->nextChild;
         }
 
         printf("\n\n\t[%d] NIP             : %s", nomor, P->dataParent.NIP);
@@ -722,12 +724,14 @@ void laporanBelumTerjual(ListParent L, string nipSales, string jenis) {
 
     printf("\n\t--- PROPERTI  (%s) MILIK %s BELUM TERJUAL ---", jenis, P->dataParent.nama);
 
-    for (C = P->firstChild; C != NULL; C = C->nextChild) {
+    C = P->firstChild;
+    while (C != NULL) {
         if (strcmpi(C->dataChild.jenis, jenis) == 0) {
             printf("\n\t[-] %s | %s | Rp %d", C->dataChild.nomorProperti, C->dataChild.alamat, C->dataChild.harga);
             jumlah++;
             totalHarga += C->dataChild.harga;
         }
+        C = C->nextChild;
     }
 
     if (jumlah == 0) {
@@ -751,20 +755,24 @@ void laporanJumlahJenis(ListParent L) {
     }
 
     printf("\n\t--- JUMLAH PROPERTI PER JENIS ---");
-    for (P = L.first; P != NULL; P = P->nextParent) {
+    P = L.first;
+    while (P != NULL) {
         tanah = 0;
         rumah = 0;
-        for (C = P->firstChild; C != NULL; C = C->nextChild) {
+        C = P->firstChild;
+        while (C != NULL) {
             if (strcmpi(C->dataChild.jenis, "tanah") == 0)
                 tanah++;
             else if (strcmpi(C->dataChild.jenis, "rumah") == 0)
                 rumah++;
+            C = C->nextChild;
         }
 
         printf("\n\t[-] %s (%s) : Tanah = %d | Rumah = %d | Total = %d", P->dataParent.nama, P->dataParent.NIP, tanah, rumah, tanah + rumah);
 
         totalTanah += tanah;
         totalRumah += rumah;
+        P = P->nextParent;
     }
 
     printf("\n\n\t=== TOTAL SEMUA SALES ===");
@@ -784,12 +792,14 @@ void laporanPropertiTerjual(ListTransaksi T) {
 
     printf("\n\t--- PROPERTI YANG SUDAH TERJUAL ---");
 
-    for (Tr = T.first; Tr != NULL; Tr = Tr->nextTransaksi) {
+    Tr = T.first;
+    while (Tr != NULL) {
         printf("\n\t[-] [%s] %s | %s | Rp %d", Tr->dataTransaksi.nomorProperti, Tr->dataTransaksi.jenis, Tr->dataTransaksi.alamat,
                Tr->dataTransaksi.harga);
         printf("\n\t    Sales: %s (%s)", Tr->dataTransaksi.namaSales, Tr->dataTransaksi.nipSales);
         jumlah++;
         totalHarga += Tr->dataTransaksi.harga;
+        Tr = Tr->nextTransaksi;
     }
 
     printf("\n\n\tJumlah Properti Terjual : %d", jumlah);

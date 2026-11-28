@@ -587,7 +587,11 @@ case 4 (menu utama)
  |    +-- switch (pilihLaporan)
  |    |      |
  |    |      +-- 1 -> laporanNamaSales(L)
- |    |      |          -> NIP, nama, telepon, totalPenjualan, jumlah properti
+ |    |      |          -> if (isEmpty(L)) -> error
+ |    |      |          -> P = L.first; while (P != NULL)
+ |    |      |               -> NIP, nama, telepon, totalPenjualan
+ |    |      |               -> C = P->firstChild; while (C != NULL) -> hitung properti
+ |    |      |          -> P = P->nextParent
  |    |      |          -> diakhiri "Jumlah Sales : N"
  |    |      |
  |    |      +-- 2 -> printSalesDanProperti(L) -> data terupdate
@@ -595,15 +599,23 @@ case 4 (menu utama)
  |    |      |          -> if (!haveChild(sales)) -> error, tanpa tanya jenis
  |    |      |          -> LOOP jenis ("rumah"/"tanah", strcmpi)
  |    |      |          -> laporanBelumTerjual(L, nip, jenis)
- |    |      |               -> tampil properti yang jenisnya cocok
- |    |      |               -> jumlah properti + total harga
+ |    |      |               -> C = P->firstChild; while (C != NULL)
+ |    |      |               -> filter strcmpi(jenis), tampil yang cocok
+ |    |      |               -> C = C->nextChild, akumulasi jumlah + total harga
  |    |      |
  |    |      +-- 3 -> laporanJumlahJenis(L)
- |    |      |          -> rekap Tanah/Rumah per sales + total semua sales
+ |    |      |          -> if (isEmpty(L)) -> error
+ |    |      |          -> P = L.first; while (P != NULL): rekap Tanah/Rumah per sales
+ |    |      |               -> C = P->firstChild; while (C != NULL): hitung per jenis
+ |    |      |               -> C = C->nextChild, P = P->nextParent
+ |    |      |          -> total semua sales
  |    |      |
  |    |      +-- 4 -> laporanPropertiTerjual(T)
  |    |      |          -> baca riwayat transaksi dari menu 3
- |    |      |          -> nomor, jenis, alamat, harga, sales + total
+ |    |      |          -> if (T.first == NULL) -> error
+ |    |      |          -> Tr = T.first; while (Tr != NULL)
+ |    |      |               -> nomor, jenis, alamat, harga, sales
+ |    |      |               -> Tr = Tr->nextTransaksi, akumulasi jumlah + total harga
  |    |      |
  |    |      +-- 0 -> keluar submenu (item "Kembali")
  |    |      +-- default -> err("Pilihan Tidak Tersedia")
@@ -614,8 +626,18 @@ case 4 (menu utama)
  +-- break -> kembali ke menu utama
 ```
 
-Ketiga laporan bersifat read-only: tidak mengubah list. Properti yang sudah
+Keempat laporan bersifat read-only: tidak mengubah list. Properti yang sudah
 dijual tidak muncul di laporan case 2 karena node-nya dihapus `jualProperti`.
+
+Semua traversal di laporan memakai `while`, bukan `for`: pointer diinisialisasi
+sebelum loop (`P = L.first`, `C = P->firstChild`, `Tr = T.first`), lalu
+dimajukan di akhir badan loop dengan `P = P->nextParent`, `C = C->nextChild`,
+atau `Tr = Tr->nextTransaksi`. Kondisi hentinya tetap `node != NULL`, sehingga
+hasilnya identik dengan versi `for`.
+
+Case 2 mencari sales dan jenis lewat input di `main.c`, lalu menyerahkan
+pencetakan ke `laporanBelumTerjual`. Case 1, 3, dan 4 langsung memanggil
+prosedur laporan masing-masing.
 
 ---
 
