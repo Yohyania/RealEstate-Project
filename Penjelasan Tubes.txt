@@ -14,14 +14,14 @@ Sales
 - Tlpn
 - Total penjualan
 
-jual property = hapus property dan Harga di akumulasi ke total penjualan sales
+jual property = hapus property dan Harga di akumulasi ke total penjualan sales (done)
 
 Laporan Owner
--daftar nama sales
--daftar property yang belum terjual berdasarkan jenis di sales tertentu
--jumlah property berdasarkan jenis
+-daftar nama sales (done)
+-daftar property yang belum terjual berdasarkan jenis di sales tertentu (done)
+-jumlah property berdasarkan jenis 
 
-sales dan property harus CRUD
+sales dan property harus CRUD (done)
 tampilkan data terupdate di atas saat mau melakukan CRUD agar user mudah mencari data (done)
 
 Fitur kurang:
@@ -30,29 +30,33 @@ Fitur kurang:
 2. ubah dan hapus belum dipanggil dari menu (done)
 3. fungsi udah ada di source tapi belum terhubung ke program utama (done)
 
-- Jual Properti
+- Jual Properti (done)
 1. masih menampilkan belum tersedia di main.c
 2. belum ada mencari sales dan properti
 3. belum ada menghapus properti yang dijual
 3. belum ada menambahkan harga properti ke totalPenjualan sales
 
-- Laporan Owner
-1. Daftar nama sales belum ditampilkan 
-2. belum ada laporan properti yang belum terjual berdasarkan jenis untuk sales tertentu
-3. belum ada laporan jumlah properti berdasarkan jenis, yaitu tanah dan rumah
-4. menu laporan belum masuk ke main.c
+- Laporan Owner 
+1. Daftar nama sales belum ditampilkan (done)
+2. belum ada laporan properti yang belum terjual berdasarkan jenis untuk sales tertentu (done)
+3. belum ada laporan jumlah properti berdasarkan jenis, yaitu tanah dan rumah (belum)
+4. menu laporan belum masuk ke main.c (done)
 
-- menampilkan data sebelum proses CRUD
+- menampilkan data sebelum proses CRUD (done)
 
-1. Hapus sales belum bisa memindah properti ke sales lain
-2. pada insertAtChild, variabel temp digunakan sebelum diberi nilai
-3. perbandingan temp < 1 pada insertAtChild salah karena membandingkan pointer temp, seharusnya membandingkan input
+1. Hapus sales belum bisa memindah properti ke sales lain (done)
+2. pada insertAtChild, variabel temp digunakan sebelum diberi nilai (done)
+3. perbandingan temp < 1 pada insertAtChild salah karena membandingkan pointer temp, seharusnya membandingkan input (done)
 4. pembacaan pilihan menu Properti salah: scanf("%d", pilihProperti) seharusnya scanf("%d", &pilihProperti) (done)
 5. penamaan fungsi child tidak konsisten; header mendeklarasikan deleteFirtsChild, sedangkan implementasinya bernama deleteFirstChild (done)
 6. belum ada validasi nomor properti yang unik (done, nomor properti tidak boleh sama)
-7. alokasiChild belum memeriksa apakah alokasi memori berhasil
+7. alokasiChild belum memeriksa apakah alokasi memori berhasil (done)
 
 UPDATE:
 1. untuk update sales pakai variabel nip saja, agar tidak boros. Tidak perlu pakai banyak variabel nip lama dan nip pengganti
 2. update insert properti
 3. eror handling infinite loop jual atau ubah properti dan sales
+4. menu properti done
+5. menu laporan Owner done
+6. jika hanya 1 sales dan akan di hapus maka harus hapus properti dulu atau properti tidak dapat di jual. Properti hanya bisa dipindah jika sales minimal 2
+7. akan tambah menu yang menampilkan terjual saja
