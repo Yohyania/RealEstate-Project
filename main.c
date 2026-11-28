@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 2: { /* Ubah Sales */
-                            bool isValid;
+                            bool isValid, batal = false;
 
                             if (isEmpty(L)) {
                                 err("Data Sales Masih Kosong");
@@ -81,20 +81,26 @@ int main(int argc, char *argv[]) {
                             }
 
                             printf("\n\t--- UBAH SALES ---\n");
+                            printAllParent(L);
+                            printf("\n");
 
                             do {
                                 isValid = true;
-                                printf("\tNIP Sales yang diubah : ");
+                                printf("\tNIP Sales yang diubah (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(nip);
                                 if (strcmp(nip, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 } else if (findParent(L, nip) == NULL) {
                                     err("Data Sales Tidak Ditemukan");
                                     isValid = false;
                                 }
                             } while (!isValid);
+
+                            if (batal) {
+                                err("Perubahan Dibatalkan");
+                                break;
+                            }
 
                             do {
                                 isValid = true;
@@ -137,7 +143,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 3: { /* Hapus Sales */
-                            bool isValid;
+                            bool isValid, batal = false;
 
                             if (isEmpty(L)) {
                                 err("Data Sales Masih Kosong");
@@ -145,39 +151,57 @@ int main(int argc, char *argv[]) {
                             }
 
                             printf("\n\t--- HAPUS SALES ---\n");
+                            printAllParent(L);
+                            printf("\n");
 
                             do {
                                 isValid = true;
-                                printf("\tNIP Sales yang dihapus : ");
+                                printf("\tNIP Sales yang dihapus (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(nip);
                                 if (strcmp(nip, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 } else if (findParent(L, nip) == NULL) {
                                     err("Data Sales Tidak Ditemukan");
                                     isValid = false;
                                 }
                             } while (!isValid);
 
-                            do {
-                                isValid = true;
-                                printf("\tNIP Sales pengganti : ");
-                                fflush(stdin);
-                                gets(nipBaru);
-                                if (strcmpi(nipBaru, "") == 0) {
-                                    err("NIP Pengganti Tidak Boleh Kosong");
-                                    isValid = false;
-                                } else if (strcmpi(nipBaru, nip) == 0) {
-                                    err("Sales Pengganti Harus Berbeda");
-                                    isValid = false;
-                                } else if (findParent(L, nipBaru) == NULL) {
-                                    err("Sales Pengganti Tidak Ditemukan");
-                                    isValid = false;
-                                }
-                            } while (!isValid);
+                            if (batal) {
+                                err("Penghapusan Dibatalkan");
+                                break;
+                            }
 
-                            /* Pemindahan properti ke sales pengganti belum tersedia */
+                            if (haveChild(findParent(L, nip))) {
+                                if (countParent(L) < 2) {
+                                    err("Tidak Ada Sales Pengganti, Hapus Properti Terlebih Dahulu");
+                                    break;
+                                }
+
+                                do {
+                                    isValid = true;
+                                    printf("\tNIP Sales pengganti (kosongkan untuk batal) : ");
+                                    fflush(stdin);
+                                    gets(nipBaru);
+                                    if (strcmp(nipBaru, "") == 0) {
+                                        batal = true;
+                                    } else if (strcmp(nipBaru, nip) == 0) {
+                                        err("Sales Pengganti Harus Berbeda");
+                                        isValid = false;
+                                    } else if (findParent(L, nipBaru) == NULL) {
+                                        err("Sales Pengganti Tidak Ditemukan");
+                                        isValid = false;
+                                    }
+                                } while (!isValid);
+
+                                if (batal) {
+                                    err("Penghapusan Dibatalkan");
+                                    break;
+                                }
+
+                                pindahProperti(&L, nip, nipBaru);
+                            }
+
                             deleteAtParent(&L, nip);
                             break;
                         }
@@ -205,7 +229,8 @@ int main(int argc, char *argv[]) {
                     getchar();
                     switch (pilihProperti) {
                         case 1: { /* Tambah Properti */
-                            bool isValid;
+                            bool isValid, batal = false;
+                            string hargaStr;
 
                             printf("\n\t--- TAMBAH PROPERTI ---\n");
                             if (isEmpty(L)) {
@@ -213,14 +238,16 @@ int main(int argc, char *argv[]) {
                                 break;
                             }
 
+                            printAllParent(L);
+                            printf("\n");
+
                             do {
                                 isValid = true;
-                                printf("Masukkan NIP Sales  : ");
+                                printf("Masukkan NIP Sales (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(nip);
                                 if (strcmp(nip, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 } else {
                                     salesDicari = findParent(L, nip);
                                     if (salesDicari == NULL) {
@@ -229,62 +256,71 @@ int main(int argc, char *argv[]) {
                                     }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penambahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Masukkan nomor properti : ");
+                                printf("Masukkan nomor properti (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(dataProperti.nomorProperti);
                                 if (strcmp(dataProperti.nomorProperti, "") == 0) {
-                                    err("Nomor properti tidak boleh kosong");
+                                    batal = true;
+                                } else if (findChild(salesDicari->firstChild, dataProperti.nomorProperti) != NULL) {
+                                    err("Nomor Properti Sudah Ada");
                                     isValid = false;
-                                } else {
-                                    propDicari = findChild(salesDicari->firstChild, dataProperti.nomorProperti);
-                                    if (propDicari != NULL) {
-                                        err("Nomor Properti Sudah Ada");
-                                        isValid = false;
-                                    }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penambahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Masukkan jenis properti (rumah/tanah)   : ");
+                                printf("Masukkan jenis properti (rumah/tanah, kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(dataProperti.jenis);
-                                if (strcmpi(dataProperti.jenis, "rumah") != 0 && strcmpi(dataProperti.jenis, "tanah") != 0) {
+                                if (strcmp(dataProperti.jenis, "") == 0) {
+                                    batal = true;
+                                } else if (strcmpi(dataProperti.jenis, "rumah") != 0 && strcmpi(dataProperti.jenis, "tanah") != 0) {
                                     err("Jenis Harus Rumah atau Tanah");
                                     isValid = false;
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penambahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Masukkan alamat properti     : ");
+                                printf("Masukkan alamat properti (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(dataProperti.alamat);
                                 if (strcmp(dataProperti.alamat, "") == 0) {
-                                    err("Alamat Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penambahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Masukkan harga properti : ");
-                                scanf("%d", &dataProperti.harga);
-                                if (dataProperti.harga <= 0) {
-                                    err("Harga Harus Lebih Dari 0");
-                                    isValid = false;
+                                printf("Masukkan harga properti (kosongkan untuk batal) : ");
+                                fflush(stdin);
+                                gets(hargaStr);
+                                if (strcmp(hargaStr, "") == 0) {
+                                    batal = true;
+                                } else {
+                                    dataProperti.harga = atoi(hargaStr);
+                                    if (dataProperti.harga <= 0) {
+                                        err("Harga Harus Berupa Angka Lebih Dari 0");
+                                        isValid = false;
+                                    }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penambahan Dibatalkan"); break; }
 
                             insertLastChild(&L, nip, dataProperti);
                             break;
                         }
 
                         case 2: { /* Ubah Properti */
-                            bool isValid;
+                            bool isValid, batal = false;
+                            string hargaStr;
 
                             printf("\n\t--- UBAH PROPERTI ---\n");
                             if (isEmpty(L)) {
@@ -292,14 +328,16 @@ int main(int argc, char *argv[]) {
                                 break;
                             }
 
+                            printSalesDanProperti(L);
+                            printf("\n");
+
                             do {
                                 isValid = true;
-                                printf("Masukkan NIP Sales  : ");
+                                printf("Masukkan NIP Sales (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(nip);
                                 if (strcmp(nip, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 } else {
                                     salesDicari = findParent(L, nip);
                                     if (salesDicari == NULL) {
@@ -308,62 +346,79 @@ int main(int argc, char *argv[]) {
                                     }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Perubahan Dibatalkan"); break; }
+
+                            if (!haveChild(salesDicari)) {
+                                err("Sales Ini Belum Memiliki Properti");
+                                break;
+                            }
+
+                            printf("\n\tProperti milik sales ini :");
+                            tampilProperti(salesDicari->firstChild);
+                            printf("\n\n");
 
                             do {
                                 isValid = true;
-                                printf("Masukkan nomor properti : ");
+                                printf("Masukkan nomor properti (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(noProp);
                                 if (strcmp(noProp, "") == 0) {
-                                    err("Nomor Properti Tidak Boleh Kosong");
+                                    batal = true;
+                                } else if (findChild(salesDicari->firstChild, noProp) == NULL) {
+                                    err("Data Properti Tidak Ditemukan");
                                     isValid = false;
-                                } else {
-                                    propDicari = findChild(salesDicari->firstChild, noProp);
-                                    if (propDicari == NULL) {
-                                        err("Data Properti Tidak Ditemukan");
-                                        isValid = false;
-                                    }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Perubahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Masukkan jenis properti (tanah/rumah)   : ");
+                                printf("Jenis properti baru (rumah/tanah, kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(dataPropBaru.jenis);
-                                if (strcmpi(dataPropBaru.jenis, "rumah") != 0 && strcmpi(dataPropBaru.jenis, "tanah") != 0) {
+                                if (strcmp(dataPropBaru.jenis, "") == 0) {
+                                    batal = true;
+                                } else if (strcmpi(dataPropBaru.jenis, "rumah") != 0 && strcmpi(dataPropBaru.jenis, "tanah") != 0) {
                                     err("Jenis Harus Rumah atau Tanah");
                                     isValid = false;
                                 }
                             } while (!isValid);
+                            if (batal) { err("Perubahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Alamat properti baru : ");
+                                printf("Alamat properti baru (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(dataPropBaru.alamat);
                                 if (strcmp(dataPropBaru.alamat, "") == 0) {
-                                    err("Alamat Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 }
                             } while (!isValid);
+                            if (batal) { err("Perubahan Dibatalkan"); break; }
 
                             do {
                                 isValid = true;
-                                printf("Harga properti baru : ");
-                                scanf("%d", &dataPropBaru.harga);
-                                if (dataPropBaru.harga <= 0) {
-                                    err("Harga Harus Lebih Dari 0");
-                                    isValid = false;
+                                printf("Harga properti baru (kosongkan untuk batal) : ");
+                                fflush(stdin);
+                                gets(hargaStr);
+                                if (strcmp(hargaStr, "") == 0) {
+                                    batal = true;
+                                } else {
+                                    dataPropBaru.harga = atoi(hargaStr);
+                                    if (dataPropBaru.harga <= 0) {
+                                        err("Harga Harus Berupa Angka Lebih Dari 0");
+                                        isValid = false;
+                                    }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Perubahan Dibatalkan"); break; }
 
                             updateChild(&L, nip, noProp, dataPropBaru);
                             break;
                         }
 
                         case 3: { /* Hapus Properti */
-                            bool isValid;
+                            bool isValid, batal = false;
 
                             printf("\n\t--- HAPUS PROPERTI ---\n");
                             if (isEmpty(L)) {
@@ -371,14 +426,16 @@ int main(int argc, char *argv[]) {
                                 break;
                             }
 
+                            printSalesDanProperti(L);
+                            printf("\n");
+
                             do {
                                 isValid = true;
-                                printf("Masukkan NIP Sales  : ");
+                                printf("Masukkan NIP Sales (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(nip);
                                 if (strcmp(nip, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
                                 } else {
                                     salesDicari = findParent(L, nip);
                                     if (salesDicari == NULL) {
@@ -387,23 +444,30 @@ int main(int argc, char *argv[]) {
                                     }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penghapusan Dibatalkan"); break; }
+
+                            if (!haveChild(salesDicari)) {
+                                err("Sales Ini Belum Memiliki Properti");
+                                break;
+                            }
+
+                            printf("\n\tProperti milik sales ini :");
+                            tampilProperti(salesDicari->firstChild);
+                            printf("\n\n");
 
                             do {
                                 isValid = true;
-                                printf("Masukkan nomor properti : ");
+                                printf("Masukkan nomor properti (kosongkan untuk batal) : ");
                                 fflush(stdin);
                                 gets(noProp);
                                 if (strcmp(noProp, "") == 0) {
-                                    err("Nomor Properti Tidak Boleh Kosong");
+                                    batal = true;
+                                } else if (findChild(salesDicari->firstChild, noProp) == NULL) {
+                                    err("Data Properti Tidak Ditemukan");
                                     isValid = false;
-                                } else {
-                                    propDicari = findChild(salesDicari->firstChild, noProp);
-                                    if (propDicari == NULL) {
-                                        err("Data Properti Tidak Ditemukan");
-                                        isValid = false;
-                                    }
                                 }
                             } while (!isValid);
+                            if (batal) { err("Penghapusan Dibatalkan"); break; }
 
                             deleteAtChild(&L, nip, noProp);
                             break;

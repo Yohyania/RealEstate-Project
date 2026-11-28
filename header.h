@@ -78,9 +78,11 @@ void deleteFirstChild(ListParent *L, string nipsSales);
 void deleteLastChild(ListParent *L, string nipSales);
 void deleteAtChild(ListParent *L, string nipSales, string nomorProperti);
 void tampilProperti(addressChild C);
+void printSalesDanProperti(ListParent L);
 
 ////////////////////// Laporan Owner & Transaksi ///////////////////////////////
 void jualProperti(ListParent L); // belum pasti
+void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
 void laporanBelumTerjual(ListParent L, string jenis);
 void laporanJumlahJenis(ListParent L);

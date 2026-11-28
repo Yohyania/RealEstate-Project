@@ -23,7 +23,7 @@ void showMenu() {
     printf("\033[0m");
     printf("\n\t\t[1] Sales");
     printf("\n\t\t[2] Properti");
-    printf("\n\t\t[3] JualProperti");
+    printf("\n\t\t[3] Jual Properti");
     printf("\n\t\t[4] Laporan Owner");
     printf("\n\t\t[0] Exit");
     printf("\n\t\t>>> ");
@@ -395,9 +395,9 @@ void insertAtChild(ListParent *L, string nipSales,  DataChild dataBaru, int inpu
 	if(P == NULL){
 		printf("\n\t\t [!] Parent tidak ada [!]");
 	}else{
-		if(temp < 1){
+		if(input < 1){
 			printf("\n\t\t [!] Posisi tidak valid [!]");
-		}else if(temp == 1){
+		}else if(input == 1){
 			insertFirstChild(L, nipSales, dataBaru);
 		}else{
 			temp = P->firstChild;
@@ -520,4 +520,60 @@ void tampilProperti(addressChild C){
 			C->dataChild.harga);
 		tampilProperti(C->nextChild);
 	}
+}
+
+void printSalesDanProperti(ListParent L) {
+    addressParent P;
+
+    if (isEmpty(L)) {
+        err("Data Sales Masih Kosong");
+        return;
+    }
+
+    P = L.first;
+    while (P != NULL) {
+        printParent(P);
+        if (haveChild(P)) {
+            printf("\n\t[-] Daftar Properti :");
+            tampilProperti(P->firstChild);
+        } else {
+            printf("\n\t[-] Daftar Properti : (belum ada properti)");
+        }
+        printf("\n");
+        P = P->nextParent;
+    }
+}
+
+void pindahProperti(ListParent *L, string nipAsal, string nipTujuan) {
+    addressParent asal, tujuan;
+    addressChild C, temp;
+
+    asal = findParent(*L, nipAsal);
+    tujuan = findParent(*L, nipTujuan);
+    if (asal == NULL || tujuan == NULL) {
+        err("Data Sales Tidak Ditemukan");
+        return;
+    }
+    if (!haveChild(asal))
+        return;
+
+    /* nomor properti dicek unik per sales, jadi cegah bentrok */
+    for (C = asal->firstChild; C != NULL; C = C->nextChild) {
+        if (findChild(tujuan->firstChild, C->dataChild.nomorProperti) != NULL) {
+            err("Nomor Properti Bentrok dengan Milik Sales Pengganti");
+            return;
+        }
+    }
+
+    if (tujuan->firstChild == NULL) {
+        tujuan->firstChild = asal->firstChild;
+    } else {
+        temp = tujuan->firstChild;
+        while (temp->nextChild != NULL)
+            temp = temp->nextChild;
+        temp->nextChild = asal->firstChild;
+    }
+    asal->firstChild = NULL;
+
+    suc("Properti Berhasil Dialihkan ke Sales Pengganti");
 }
