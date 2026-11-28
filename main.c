@@ -145,6 +145,7 @@ int main(int argc, char *argv[]) {
 
                             updateParent(&L, nip, dataSales);
                             break;
+                            
                         }
 
                         case 3: { /* Hapus Sales */
@@ -209,6 +210,7 @@ int main(int argc, char *argv[]) {
 
                             deleteAtParent(&L, nip);
                             break;
+                        
                         }
 
                         case 4: // Lihat Semua Sales
