@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 
                     switch (pilihanSales) {
                         case 1: { /* Tambah Sales */
+                            system("cls");
                             bool isValid;
 
                             printf("\n\t--- TAMBAH SALES ---\n");
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 2: { /* Ubah Sales */
+                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -149,6 +151,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 3: { /* Hapus Sales */
+                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -214,6 +217,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 4: // Lihat Semua Sales
+                            system("cls");
                             printf("\n\t--- DAFTAR SALES ---");
                             printAllParent(L);
                             break;
@@ -235,6 +239,7 @@ int main(int argc, char *argv[]) {
 
                     switch (pilihProperti) {
                         case 1: { /* Tambah Properti */
+                            system("cls");
                             bool isValid, batal = false;
                             string hargaStr;
 
@@ -325,6 +330,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 2: { /* Ubah Properti */
+                            system("cls");
                             bool isValid, batal = false;
                             string hargaStr;
 
@@ -424,6 +430,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 3: { /* Hapus Properti */
+                            system("cls");
                             bool isValid, batal = false;
 
                             printf("\n\t--- HAPUS PROPERTI ---\n");
