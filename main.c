@@ -492,10 +492,101 @@ int main(int argc, char *argv[]) {
                 } while (pilihProperti != 0);
                 break;
 
-            case 3: // JUAL PROPERTI (belum dibuat)
-                err("Fitur Jual Properti Belum Tersedia");
+            case 3:{
+                bool isValid, batal = false;
+				string konfirmasi;
+				addressParent pTemp;
+				addressChild cTemp;
+				
+				getchar(); 
+				
+            	printf("\n\t--- Jual Properti ---\n");
+            	if(isEmpty(L)){
+            		err("Data sales masih kosong");
+            		getch();
+            		break;
+				}
+				
+				printSalesDanProperti(L);
+				printf("\n");
+				
+				do {
+                    isValid = true;
+                    printf("\tMasukkan NIP Sales (kosongkan untuk batal) : ");
+                    fflush(stdin);
+                    gets(nip);
+                    if (strcmp(nip, "") == 0) {
+                        batal = true;
+                    } else {
+                        salesDicari = findParent(L, nip);
+                        if (salesDicari == NULL) {
+                            err("Data sales tidak ditemukan");
+                            isValid = false;
+                        }
+                    }
+                } while (!isValid);
+				
+				if(batal){
+					err("transaksi dibatalakan");
+					getch();
+					break;
+				}
+				
+				
+				if (!haveChild(salesDicari)) {
+                    err("Sales ini belum memiliki properti untuk dijual");
+                    getch();
+                    break;
+                }
+                
+                printf("\n\tProperti milik %s :", salesDicari->dataParent.nama);
+                tampilProperti(salesDicari->firstChild);
+                printf("\n\n");
+                
+                do {
+                    isValid = true;
+                    printf("\tMasukkan nomor properti yang terjual (kosongkan untuk batal) : ");fflush(stdin);gets(noProp);
+                    if (strcmp(noProp, "") == 0) {
+                        batal = true;
+                    } else {
+                        propDicari = findChild(salesDicari->firstChild, noProp);
+                        if (propDicari == NULL) {
+                            err("Data properti tidak ditemukan");
+                            isValid = false;
+                        }
+                    }
+                } while (!isValid);
+
+                if (batal) {
+                    err("Transaksi dibatalkan");
+                    getch();
+                    break;
+                }
+				
+				printf("\n\tDetail Transaksi:");
+                printf("\n\t[-] Sales   : %s (%s)", salesDicari->dataParent.nama, salesDicari->dataParent.NIP);
+                printf("\n\t[-] Properti: [%s] %s - %s", propDicari->dataChild.nomorProperti, propDicari->dataChild.jenis, propDicari->dataChild.alamat);
+                printf("\n\t[-] Harga   : Rp %d\n", propDicari->dataChild.harga);
+                
+                do{
+                	isValid = true;
+                	printf("\n\tKonfirmasi penjualan properti ini? (y/n): "); fflush(stdin); gets(konfirmasi);
+                	if(strcmpi(konfirmasi, "y") != 0 && strcmpi(konfirmasi,"n") != 0){
+                		err("Input harus 'y' atau 'n'");
+                		isValid = false;
+					}
+				}while (!isValid);
+				
+				if (strcmpi(konfirmasi,"n") == 0){
+					err("Transaski Penjualan dibatalkan");
+				}else{
+					jualProperti(&L, nip, noProp);
+					printf("\tTotal Penjualan %s sekarang : Rp %d\n", salesDicari->dataParent.nama, salesDicari->dataParent.totalPenjualan);
+					
+				}
                 getch();
                 break;
+            }
 
             case 4: // LAPORAN OWNER (belum dibuat)
                 do {
