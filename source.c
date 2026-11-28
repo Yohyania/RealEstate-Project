@@ -544,6 +544,29 @@ void printSalesDanProperti(ListParent L) {
     }
 }
 
+void jualProperti(ListParent *L, string nipSales, string nomorProperti ){
+	addressParent P;
+	addressChild C;
+	
+	P = findParent (*L, nipSales);
+	if (P == NULL){
+		err("Data tidak ditemukan");
+		return;
+	}
+	
+	C = findChild(P->firstChild, nomorProperti);
+	if(C == NULL){
+		err("Data Properti tidak ditemukan");
+		return;
+	}
+	
+	P->dataParent.totalPenjualan += C->dataChild.harga;
+	deleteAtChild(L, nipSales, nomorProperti);
+	suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui");
+	
+}
+
+
 void pindahProperti(ListParent *L, string nipAsal, string nipTujuan) {
     addressParent asal, tujuan;
     addressChild C, temp;
