@@ -1,6 +1,3 @@
-#ifndef HEADER_H
-#define HEADER_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,5 +83,3 @@ void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
 void laporanBelumTerjual(ListParent L, string jenis);
 void laporanJumlahJenis(ListParent L);
-
-#endif

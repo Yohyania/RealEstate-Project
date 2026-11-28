@@ -24,24 +24,31 @@ int main(int argc, char *argv[]) {
                     getchar();
                     switch (pilihanSales) {
                         case 1: { /* Tambah Sales */
-                            bool isValid;
-
+                            system("cls");
+                            bool isValid, batal= false;
                             printf("\n\t--- TAMBAH SALES ---\n");
 
                             do {
                                 isValid = true;
-                                printf("\tNIP           : ");
+                                printf("\tNIP   (kosongkan untuk batal): ");
                                 fflush(stdin);
                                 gets(dataSales.NIP);
                                 if (strcmp(dataSales.NIP, "") == 0) {
-                                    err("NIP Tidak Boleh Kosong");
-                                    isValid = false;
+                                    batal = true;
+                                    break;
                                 } else if (findParent(L, dataSales.NIP) != NULL) {
                                     err("NIP Sudah Terdaftar");
-
+                                    isValid = false;
+                                }
+                                else if(strlen(dataSales.NIP) < 5){
+                                    err("NIP Tidak Boleh Kurang dari 5 Digit");
                                     isValid = false;
                                 }
                             } while (!isValid);
+                            if(batal){
+                                err("Penambahan Dibatalkan");
+                                break;
+                            }
 
                             do {
                                 isValid = true;
@@ -70,9 +77,11 @@ int main(int argc, char *argv[]) {
 
                             insertLastParent(&L, dataSales);
                             break;
+                            getch();
                         }
 
                         case 2: { /* Ubah Sales */
+                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -143,6 +152,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 3: { /* Hapus Sales */
+                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -207,6 +217,7 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 4: // Lihat Semua Sales
+                            system("cls");
                             printf("\n\t--- DAFTAR SALES ---");
                             printAllParent(L);
                             break;

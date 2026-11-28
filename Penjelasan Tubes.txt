@@ -22,7 +22,7 @@ Laporan Owner
 -jumlah property berdasarkan jenis
 
 sales dan property harus CRUD
-tampilkan data terupdate di atas saat mau melakukan CRUD agar user mudah mencari data
+tampilkan data terupdate di atas saat mau melakukan CRUD agar user mudah mencari data (done)
 
 Fitur kurang:
 - CRUD PROPERTI
@@ -55,3 +55,4 @@ Fitur kurang:
 UPDATE:
 1. untuk update sales pakai variabel nip saja, agar tidak boros. Tidak perlu pakai banyak variabel nip lama dan nip pengganti
 2. update insert properti
+3. eror handling infinite loop jual atau ubah properti dan sales
