@@ -642,3 +642,104 @@ int menuPanah(char *judul, char *item[], int jumlah) {
         }
     }
 }
+
+// ///////////////////Laporan Owner & Transaksi///////////////////////////////
+
+void laporanNamaSales(ListParent L) {
+    addressParent P;
+    addressChild C;
+    int nomor = 1, jumlahProperti;
+
+    if (isEmpty(L)) {
+        err("Data Sales Masih Kosong");
+        return;
+    }
+
+    printf("\n\t--- DAFTAR NAMA SALES ---");
+    P = L.first;
+    while (P != NULL) {
+        jumlahProperti = 0;
+        for (C = P->firstChild; C != NULL; C = C->nextChild) {
+            jumlahProperti++;
+        }
+
+        printf("\n\n\t[%d] NIP             : %s", nomor, P->dataParent.NIP);
+        printf("\n\t    Nama            : %s", P->dataParent.nama);
+        printf("\n\t    Nomor Telepon   : %s", P->dataParent.nomorTelpon);
+        printf("\n\t    Total Penjualan : Rp %d", P->dataParent.totalPenjualan);
+        printf("\n\t    Jumlah Properti : %d", jumlahProperti);
+
+        nomor++;
+        P = P->nextParent;
+    }
+    printf("\n\n\tJumlah Sales : %d\n", countParent(L));
+}
+
+void laporanBelumTerjual(ListParent L, string nipSales, string jenis) {
+    addressParent P;
+    addressChild C;
+    int jumlah = 0, totalHarga = 0;
+
+    P = findParent(L, nipSales);
+    if (P == NULL) {
+        err("Data Sales Tidak Ditemukan");
+        return;
+    }
+
+    if (!haveChild(P)) {
+        err("Sales Ini Belum Memiliki Properti");
+        return;
+    }
+
+    printf("\n\t--- PROPERTI  (%s) MILIK %s BELUM TERJUAL ---", jenis, P->dataParent.nama);
+
+    for (C = P->firstChild; C != NULL; C = C->nextChild) {
+        if (strcmpi(C->dataChild.jenis, jenis) == 0) {
+            printf("\n\t[-] %s | %s | Rp %d", C->dataChild.nomorProperti, C->dataChild.alamat, C->dataChild.harga);
+            jumlah++;
+            totalHarga += C->dataChild.harga;
+        }
+    }
+
+    if (jumlah == 0) {
+        printf("\n\tTidak Ada Properti %s yang Belum Terjual\n", jenis);
+        return;
+    }
+
+    printf("\n\n\tJumlah Properti %s : %d", jenis, jumlah);
+    printf("\n\tTotal Harga         : Rp %d\n", totalHarga);
+}
+
+void laporanJumlahJenis(ListParent L) {
+    addressParent P;
+    addressChild C;
+    int totalTanah = 0, totalRumah = 0;
+    int tanah, rumah;
+
+    if (isEmpty(L)) {
+        err("Data Sales Masih Kosong");
+        return;
+    }
+
+    printf("\n\t--- JUMLAH PROPERTI PER JENIS ---");
+    for (P = L.first; P != NULL; P = P->nextParent) {
+        tanah = 0;
+        rumah = 0;
+        for (C = P->firstChild; C != NULL; C = C->nextChild) {
+            if (strcmpi(C->dataChild.jenis, "tanah") == 0)
+                tanah++;
+            else if (strcmpi(C->dataChild.jenis, "rumah") == 0)
+                rumah++;
+        }
+
+        printf("\n\t[-] %s (%s) : Tanah = %d | Rumah = %d | Total = %d", P->dataParent.nama, P->dataParent.NIP, tanah, rumah, tanah + rumah);
+
+        totalTanah += tanah;
+        totalRumah += rumah;
+    }
+
+    printf("\n\n\t=== TOTAL SEMUA SALES ===");
+    printf("\n\t[-] Tanah : %d", totalTanah);
+    printf("\n\t[-] Rumah : %d", totalRumah);
+    printf("\n\t[-] Total : %d\n", totalTanah + totalRumah);
+}

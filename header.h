@@ -81,7 +81,7 @@ void printSalesDanProperti(ListParent L);
 void jualProperti(ListParent *L, string nipSales, string nomorProperti );
 void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
-void laporanBelumTerjual(ListParent L, string jenis);
+void laporanBelumTerjual(ListParent L, string nipSales, string jenis);
 void laporanJumlahJenis(ListParent L);
 
 
