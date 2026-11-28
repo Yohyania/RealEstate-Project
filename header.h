@@ -83,3 +83,7 @@ void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
 void laporanBelumTerjual(ListParent L, string jenis);
 void laporanJumlahJenis(ListParent L);
+
+
+//arrow key
+int menuPanah(char *judul, char *item[], int jumlah);

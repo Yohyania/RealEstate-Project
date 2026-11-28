@@ -577,3 +577,45 @@ void pindahProperti(ListParent *L, string nipAsal, string nipTujuan) {
 
     suc("Properti Berhasil Dialihkan ke Sales Pengganti");
 }
+
+
+//arrow key
+int menuPanah(char *judul, char *item[], int jumlah) {
+    int pilihan = 0, i, key;
+
+    while (1) {
+        system("cls");
+
+        /* header berwarna biru, sama seperti menu awal */
+        printf("\033[0;34m");
+        printf("\n\t============================================================");
+        printf("\033[0m");
+        printf("\n\t    %s", judul);
+        printf("\033[0;34m");
+        printf("\n\t============================================================");
+        printf("\033[0m");
+
+        for (i = 0; i < jumlah; i++) {
+            if (i == pilihan)
+                printf("\n\t\t\033[1;37m> %s\033[0m", item[i]);
+            else
+                printf("\n\t\t  %s", item[i]);     /* spasi pengganti panah, supaya teks sejajar */
+        }
+        printf("\n");
+		printf("\n\t  [Up/Down] Pilih    [Enter] Konfirmasi    [Esc] Kembali\n");
+		
+		
+        key = getch();
+        if (key == 0 || key == 224) {            /* tombol khusus (panah) */
+            key = getch();
+            if (key == 72)                        /* panah atas */
+                pilihan = (pilihan - 1 + jumlah) % jumlah;
+            else if (key == 80)                   /* panah bawah */
+                pilihan = (pilihan + 1) % jumlah;
+        } else if (key == 13) {                   /* Enter */
+            return (pilihan + 1) % jumlah;        /* item terakhir -> 0 */
+        } else if (key == 27) {                   /* Esc */
+            return 0;
+        }
+    }
+}

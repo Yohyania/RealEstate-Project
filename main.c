@@ -10,45 +10,43 @@ int main(int argc, char *argv[]) {
     string nipBaru, nip;
     string noProp;
 
+    /* Daftar item menu (item TERAKHIR = Exit/Kembali -> dikembalikan sebagai 0) */
+    char *itemUtama[]    = {"Sales", "Properti", "Jual Properti", "Laporan Owner", "Exit"};
+    char *itemSales[]    = {"Tambah Sales", "Ubah Sales", "Hapus Sales", "Lihat Semua Sales", "Kembali"};
+    char *itemProperti[] = {"Tambah Properti", "Ubah Properti", "Hapus Properti", "Kembali"};
+    char *itemLaporan[]  = {"Daftar Nama Sales", "Properti Belum Terjual per Jenis",
+                            "Jumlah Properti per Jenis", "Kembali"};
+
     inisialisasi(&L);
 
     do {
-        showMenu();
-        scanf("%d", &menuUtama);
+        menuUtama = menuPanah("SISTEM PENGELOLAAN INVENTARIS DAN PENJUALAN PROPERTI", itemUtama, 5);
 
         switch (menuUtama) {
             case 1: /* MENU SALES (parent) */
                 do {
-                    menuSales();
-                    scanf("%d", &pilihanSales);
-                    getchar();
+                    pilihanSales = menuPanah("MENU SALES", itemSales, 5);
+
                     switch (pilihanSales) {
                         case 1: { /* Tambah Sales */
-                            system("cls");
-                            bool isValid, batal= false;
+                            bool isValid;
+
                             printf("\n\t--- TAMBAH SALES ---\n");
 
                             do {
                                 isValid = true;
-                                printf("\tNIP   (kosongkan untuk batal): ");
+                                printf("\tNIP           : ");
                                 fflush(stdin);
                                 gets(dataSales.NIP);
                                 if (strcmp(dataSales.NIP, "") == 0) {
-                                    batal = true;
-                                    break;
+                                    err("NIP Tidak Boleh Kosong");
+                                    isValid = false;
                                 } else if (findParent(L, dataSales.NIP) != NULL) {
                                     err("NIP Sudah Terdaftar");
-                                    isValid = false;
-                                }
-                                else if(strlen(dataSales.NIP) < 5){
-                                    err("NIP Tidak Boleh Kurang dari 5 Digit");
+
                                     isValid = false;
                                 }
                             } while (!isValid);
-                            if(batal){
-                                err("Penambahan Dibatalkan");
-                                break;
-                            }
 
                             do {
                                 isValid = true;
@@ -77,11 +75,9 @@ int main(int argc, char *argv[]) {
 
                             insertLastParent(&L, dataSales);
                             break;
-                            getch();
                         }
 
                         case 2: { /* Ubah Sales */
-                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -152,7 +148,6 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 3: { /* Hapus Sales */
-                            system("cls");
                             bool isValid, batal = false;
 
                             if (isEmpty(L)) {
@@ -217,7 +212,6 @@ int main(int argc, char *argv[]) {
                         }
 
                         case 4: // Lihat Semua Sales
-                            system("cls");
                             printf("\n\t--- DAFTAR SALES ---");
                             printAllParent(L);
                             break;
@@ -229,15 +223,14 @@ int main(int argc, char *argv[]) {
                             err("Pilihan Tidak Tersedia");
                             break;
                     }
-                    getch();
+                    if (pilihanSales != 0) getch(); // pause, kecuali saat "Kembali"
                 } while (pilihanSales != 0);
                 break;
 
-            case 2: // MENU PROPERTI (child, belum dibuat)
+            case 2: // MENU PROPERTI (child)
                 do {
-                    menuProperti();
-                    scanf("%d", &pilihProperti);
-                    getchar();
+                    pilihProperti = menuPanah("MENU PROPERTI", itemProperti, 4);
+
                     switch (pilihProperti) {
                         case 1: { /* Tambah Properti */
                             bool isValid, batal = false;
@@ -493,7 +486,7 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                     }
-                    getch();
+                    if (pilihProperti != 0) getch(); // pause, kecuali saat "Kembali"
                 } while (pilihProperti != 0);
                 break;
 
@@ -504,8 +497,8 @@ int main(int argc, char *argv[]) {
 
             case 4: // LAPORAN OWNER (belum dibuat)
                 do {
-                    menuLaporan();
-                    scanf("%d", &pilihLaporan);
+                    pilihLaporan = menuPanah("MENU LAPORAN", itemLaporan, 4);
+
                     switch (pilihLaporan) {
                         case 1: {
 
@@ -517,10 +510,11 @@ int main(int argc, char *argv[]) {
                         }
 
                         default: {
-                            err("Pilihan Tidak Tersedia");
+                            err("Fitur Laporan Belum Tersedia");
                             break;
                         }
                     }
+                    if (pilihLaporan != 0) getch(); // pause, kecuali saat "Kembali"
                 } while (pilihLaporan != 0);
                 break;
 
