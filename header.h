@@ -37,6 +37,27 @@ typedef struct {
     addressParent first;
 } ListParent;
 
+/* Riwayat penjualan: menyimpan properti yang sudah dijual */
+typedef struct {
+    string nomorProperti;
+    string jenis;
+    string alamat;
+    int harga;
+    string nipSales;
+    string namaSales;
+} DataTransaksi;
+
+typedef struct tTransaksi *addressTransaksi;
+
+typedef struct tTransaksi {
+    DataTransaksi dataTransaksi;
+    addressTransaksi nextTransaksi;
+} NodeTransaksi;
+
+typedef struct {
+    addressTransaksi first;
+} ListTransaksi;
+
 //////////////////////Fungsi Tampilan////////////////////////////
 void err(char *s);   // Menampilkan pesan error (merah)
 void suc(char *s);   // Menampilkan pesan berhasil (hijau)
@@ -46,8 +67,9 @@ void menuProperti(); // Menampilkan menu properti
 void menuLaporan();  // Menampilkan menu laporan owner
 
 //////////////////////Fungsi List////////////////////////////////
-void inisialisasi(ListParent *L); // Menginisialisasikan LIST
-bool isEmpty(ListParent L);       // Mengecek apakah List kosong
+void inisialisasi(ListParent *L);             // Menginisialisasikan LIST
+void inisialisasiTransaksi(ListTransaksi *T); // Menginisialisasikan riwayat transaksi
+bool isEmpty(ListParent L);                   // Mengecek apakah List kosong
 
 //////////////////////Fungsi Parent//////////////////////////////
 bool haveChild(addressParent sales);                                           // Mengecek apakah sales memiliki properti
@@ -78,11 +100,13 @@ void tampilProperti(addressChild C);
 void printSalesDanProperti(ListParent L);
 
 ////////////////////// Laporan Owner & Transaksi ///////////////////////////////
-void jualProperti(ListParent *L, string nipSales, string nomorProperti);
+void insertTransaksi(ListTransaksi *T, DataTransaksi dataBaru); // Menambah riwayat penjualan
+void jualProperti(ListParent *L, string nipSales, string nomorProperti, ListTransaksi *T);
 void pindahProperti(ListParent *L, string nipAsal, string nipTujuan);
 void laporanNamaSales(ListParent L);
 void laporanBelumTerjual(ListParent L, string nipSales, string jenis);
 void laporanJumlahJenis(ListParent L);
+void laporanPropertiTerjual(ListTransaksi T);
 
 // arrow key
 int menuPanah(char *judul, char *item[], int jumlah);

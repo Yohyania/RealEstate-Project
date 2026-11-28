@@ -62,6 +62,7 @@ void menuLaporan() {
     printf("\n\t\t[1] Daftar Nama Sales");
     printf("\n\t\t[2] Properti Belum Terjual per Jenis"); // sales tertentu
     printf("\n\t\t[3] Jumlah Properti per Jenis");
+    printf("\n\t\t[4] Properti Terjual");
     printf("\n\t\t[0] Kembali");
     printf("\n\t\t>>> ");
 }
@@ -76,6 +77,33 @@ bool isEmpty(ListParent L) {
         return 1;
     else
         return 0;
+}
+
+void inisialisasiTransaksi(ListTransaksi *T) {
+    T->first = NULL;
+}
+
+void insertTransaksi(ListTransaksi *T, DataTransaksi dataBaru) {
+    addressTransaksi baru, temp;
+
+    baru = (addressTransaksi)malloc(sizeof(NodeTransaksi));
+    if (baru == NULL) {
+        err("Alokasi Memori Gagal");
+        return;
+    }
+
+    baru->dataTransaksi = dataBaru;
+    baru->nextTransaksi = NULL;
+
+    if (T->first == NULL) {
+        T->first = baru;
+    } else {
+        temp = T->first;
+        while (temp->nextTransaksi != NULL) {
+            temp = temp->nextTransaksi;
+        }
+        temp->nextTransaksi = baru;
+    }
 }
 
 ///////////////////////////////////PARENT//////////////////////////////////////
@@ -539,9 +567,10 @@ void printSalesDanProperti(ListParent L) {
     }
 }
 
-void jualProperti(ListParent *L, string nipSales, string nomorProperti) {
+void jualProperti(ListParent *L, string nipSales, string nomorProperti, ListTransaksi *T) {
     addressParent P;
     addressChild C;
+    DataTransaksi transaksi;
 
     P = findParent(*L, nipSales);
     if (P == NULL) {
@@ -555,7 +584,16 @@ void jualProperti(ListParent *L, string nipSales, string nomorProperti) {
         return;
     }
 
+    /* simpan dulu datanya sebelum properti dihapus dari list sales */
+    strcpy(transaksi.nomorProperti, C->dataChild.nomorProperti);
+    strcpy(transaksi.jenis, C->dataChild.jenis);
+    strcpy(transaksi.alamat, C->dataChild.alamat);
+    transaksi.harga = C->dataChild.harga;
+    strcpy(transaksi.nipSales, P->dataParent.NIP);
+    strcpy(transaksi.namaSales, P->dataParent.nama);
+
     P->dataParent.totalPenjualan += C->dataChild.harga;
+    insertTransaksi(T, transaksi);
     deleteAtChild(L, nipSales, nomorProperti);
     suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui");
 }
@@ -733,4 +771,27 @@ void laporanJumlahJenis(ListParent L) {
     printf("\n\t[-] Tanah : %d", totalTanah);
     printf("\n\t[-] Rumah : %d", totalRumah);
     printf("\n\t[-] Total : %d\n", totalTanah + totalRumah);
+}
+
+void laporanPropertiTerjual(ListTransaksi T) {
+    addressTransaksi Tr;
+    int jumlah = 0, totalHarga = 0;
+
+    if (T.first == NULL) {
+        err("Belum Ada Properti yang Terjual");
+        return;
+    }
+
+    printf("\n\t--- PROPERTI YANG SUDAH TERJUAL ---");
+
+    for (Tr = T.first; Tr != NULL; Tr = Tr->nextTransaksi) {
+        printf("\n\t[-] [%s] %s | %s | Rp %d", Tr->dataTransaksi.nomorProperti, Tr->dataTransaksi.jenis, Tr->dataTransaksi.alamat,
+               Tr->dataTransaksi.harga);
+        printf("\n\t    Sales: %s (%s)", Tr->dataTransaksi.namaSales, Tr->dataTransaksi.nipSales);
+        jumlah++;
+        totalHarga += Tr->dataTransaksi.harga;
+    }
+
+    printf("\n\n\tJumlah Properti Terjual : %d", jumlah);
+    printf("\n\tTotal Harga Terjual     : Rp %d\n", totalHarga);
 }

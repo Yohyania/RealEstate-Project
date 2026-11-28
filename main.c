@@ -2,6 +2,7 @@
 
 int main(int argc, char *argv[]) {
     ListParent L;
+    ListTransaksi T;
     addressParent salesDicari;
     addressChild propDicari; // properti
     DataParent dataSales;
@@ -14,9 +15,10 @@ int main(int argc, char *argv[]) {
     char *itemUtama[] = {"Sales", "Properti", "Jual Properti", "Laporan Owner", "Exit"};
     char *itemSales[] = {"Tambah Sales", "Ubah Sales", "Hapus Sales", "Lihat Semua Sales", "Kembali"};
     char *itemProperti[] = {"Tambah Properti", "Ubah Properti", "Hapus Properti", "Kembali"};
-    char *itemLaporan[] = {"Daftar Nama Sales", "Properti Belum Terjual per Jenis", "Jumlah Properti per Jenis", "Kembali"};
+    char *itemLaporan[] = {"Daftar Nama Sales", "Properti Belum Terjual per Jenis", "Jumlah Properti per Jenis", "Properti Terjual", "Kembali"};
 
     inisialisasi(&L);
+    inisialisasiTransaksi(&T);
 
     do {
         menuUtama = menuPanah("SISTEM PENGELOLAAN INVENTARIS DAN PENJUALAN PROPERTI", itemUtama, 5);
@@ -547,8 +549,6 @@ int main(int argc, char *argv[]) {
                 addressParent pTemp;
                 addressChild cTemp;
 
-                getchar();
-
                 printf("\n\t--- Jual Properti ---\n");
                 if (isEmpty(L)) {
                     err("Data sales masih kosong");
@@ -633,7 +633,7 @@ int main(int argc, char *argv[]) {
                 if (strcmpi(konfirmasi, "n") == 0) {
                     err("Transaski Penjualan dibatalkan");
                 } else {
-                    jualProperti(&L, nip, noProp);
+                    jualProperti(&L, nip, noProp, &T);
                     printf("\tTotal Penjualan %s sekarang : Rp %d\n", salesDicari->dataParent.nama, salesDicari->dataParent.totalPenjualan);
                 }
                 getch();
@@ -642,7 +642,7 @@ int main(int argc, char *argv[]) {
 
             case 4: // LAPORAN OWNER
                 do {
-                    pilihLaporan = menuPanah("MENU LAPORAN", itemLaporan, 4);
+                    pilihLaporan = menuPanah("MENU LAPORAN", itemLaporan, 5);
 
                     switch (pilihLaporan) {
                         case 1: {
@@ -705,6 +705,10 @@ int main(int argc, char *argv[]) {
                         }
                         case 3: {
                             laporanJumlahJenis(L);
+                            break;
+                        }
+                        case 4: {
+                            laporanPropertiTerjual(T);
                             break;
                         }
                         case 0: {

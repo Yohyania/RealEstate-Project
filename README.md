@@ -127,9 +127,10 @@ main()
  |   char *itemSales[]    = {Tambah Sales, Ubah Sales, Hapus Sales, Lihat Semua Sales, Kembali}
  |   char *itemProperti[] = {Tambah Properti, Ubah Properti, Hapus Properti, Kembali}
  |   char *itemLaporan[]  = {Daftar Nama Sales, Properti Belum Terjual per Jenis,
- |                           Jumlah Properti per Jenis, Kembali}
+ |                           Jumlah Properti per Jenis, Properti Terjual, Kembali}
  |
  +-- inisialisasi(&L)                     -> L.first = NULL
+  +-- inisialisasiTransaksi(&T)            -> T.first = NULL
  |
  +-- LOOP menu utama (do-while)
  |    |
@@ -558,12 +559,13 @@ case 3 (menu utama)
  +-- tampil detail transaksi (nama sales, properti, harga)
  +-- LOOP konfirmasi: "y" / "n" (selain itu -> error)
  |     +-- "n" -> err("Transaksi Penjualan dibatalkan")
- |     +-- "y" -> jualProperti(&L, nip, noProp)
+ |     +-- "y" -> jualProperti(&L, nip, noProp, &T)
  |                  |
  |                  +-- P = findParent(*L, nipSales)
  |                  +-- C = findChild(P->firstChild, nomorProperti)
  |                  +-- P->dataParent.totalPenjualan += C->dataChild.harga
- |                  +-- deleteAtChild(L, nipSales, nomorProperti)
+ |                  +-- insertTransaksi(T, transaksi) -> simpan data sebelum dihapus
+  |                  +-- deleteAtChild(L, nipSales, nomorProperti)
  |                  +-- suc("Transaksi Berhasil dan Total Penjualan sales telah diperbarui")
  +-- getch() -> kembali ke loop menu utama
 ```
@@ -581,7 +583,7 @@ case 4 (menu utama)
  |
  +-- LOOP (do-while)
  |    |
- |    +-- menuPanah("MENU LAPORAN", itemLaporan, 4)
+ |    +-- menuPanah("MENU LAPORAN", itemLaporan, 5)
  |    +-- switch (pilihLaporan)
  |    |      |
  |    |      +-- 1 -> laporanNamaSales(L)
@@ -598,6 +600,10 @@ case 4 (menu utama)
  |    |      |
  |    |      +-- 3 -> laporanJumlahJenis(L)
  |    |      |          -> rekap Tanah/Rumah per sales + total semua sales
+ |    |      |
+ |    |      +-- 4 -> laporanPropertiTerjual(T)
+ |    |      |          -> baca riwayat transaksi dari menu 3
+ |    |      |          -> nomor, jenis, alamat, harga, sales + total
  |    |      |
  |    |      +-- 0 -> keluar submenu (item "Kembali")
  |    |      +-- default -> err("Pilihan Tidak Tersedia")
@@ -655,15 +661,17 @@ Budi (1002), Citra (1003).
 | Langkah | Pemanggilan | Kondisi `L` setelah langkah |
 | --- | --- | --- |
 | 1 | `inisialisasi(&L)` | `L.first = NULL` |
-| 2 | `insertLastParent(&L, Andi)` | `1001` |
-| 3 | `insertLastParent(&L, Budi)` | `1001 -> 1002` |
-| 4 | `insertLastParent(&L, Citra)` | `1001 -> 1002 -> 1003` |
-| 5 | `updateParent(&L, "1001", data)` | data Andi berubah, posisi tetap |
-| 6 | `insertLastChild(&L, "1001", P01)` | `1001(firstChild: P01) -> 1002 -> 1003` |
-| 7 | `printAllParent(L)` | cetak 3 sales + `Jumlah Sales : 3` |
-| 8 | `tampilProperti(P->firstChild)` | cetak `P01` milik Andi |
-| 9 | `jualProperti(&L, "1001", "P01")` | `P01` dilepas, `totalPenjualan` Andi bertambah harga `P01` |
-| 10 | `laporanBelumTerjual(L, "1001", "rumah")` | `P01` sudah tidak muncul sebagai belum terjual |
-| 11 | `deleteAtParent(&L, "1001")` | `1002 -> 1003` |
+| 2 | `inisialisasiTransaksi(&T)` | `T.first = NULL` |
+| 3 | `insertLastParent(&L, Andi)` | `1001` |
+| 4 | `insertLastParent(&L, Budi)` | `1001 -> 1002` |
+| 5 | `insertLastParent(&L, Citra)` | `1001 -> 1002 -> 1003` |
+| 6 | `updateParent(&L, "1001", data)` | data Andi berubah, posisi tetap |
+| 7 | `insertLastChild(&L, "1001", P01)` | `1001(firstChild: P01) -> 1002 -> 1003` |
+| 8 | `printAllParent(L)` | cetak 3 sales + `Jumlah Sales : 3` |
+| 9 | `tampilProperti(P->firstChild)` | cetak `P01` milik Andi |
+| 10 | `jualProperti(&L, "1001", "P01", &T)` | `P01` dilepas, `totalPenjualan` Andi bertambah, riwayat `T` bertambah |
+| 11 | `laporanBelumTerjual(L, "1001", "rumah")` | `P01` sudah tidak muncul sebagai belum terjual |
+| 12 | `laporanPropertiTerjual(T)` | `P01` muncul sebagai properti terjual |
+| 13 | `deleteAtParent(&L, "1001")` | `1002 -> 1003`, riwayat `T` tetap ada |
 
-Pada langkah 6, alur masuk ke `findParent` untuk mencari Andi, lalu node properti disambung ke `firstChild` Andi. Pada langkah 9, `findParent` dan `findChild` dipakai sebelum harga diakumulasi dan node properti dilepas. Langkah 10 memperlihatkan bahwa menu 4 membaca hasil transaksi menu 3.
+Pada langkah 7, alur masuk ke `findParent` untuk mencari Andi, lalu node properti disambung ke `firstChild` Andi. Pada langkah 10, `findParent` dan `findChild` dipakai sebelum harga diakumulasi, data disalin ke `T`, lalu node properti dilepas. Langkah 12 memperlihatkan bahwa menu 4 membaca riwayat transaksi menu 3, bukan lagi membaca list properti yang masih tersedia.
